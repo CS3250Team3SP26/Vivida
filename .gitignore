@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Documentation
+docs/
+coverage/
+
+# dev_resources
+extension-structure.md
+manifest-explained.md

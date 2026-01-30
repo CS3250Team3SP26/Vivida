@@ -1,0 +1,85 @@
+name: CI Pipeline
+
+# This workflow runs automatically when code is pushed or a pull request is
+# opened against the main or develop branches. It ensures all code meets
+# quality standards before being merged.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Primary job: Run linting and tests
+  test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Clone the repository into the runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node.js with npm caching for faster subsequent runs
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Step 3: Install dependencies using the lock file for reproducibility
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run ESLint to check code style and catch potential errors
+      # This step fails if any lint errors are found
+      - name: Run ESLint
+        run: npm run lint
+
+      # Step 5: Run Jest tests with coverage reporting
+      # Jest is configured to fail if coverage drops below 90%
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      # Step 6: Upload coverage report as an artifact for review
+      # This makes coverage data available in the GitHub Actions UI
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+  # Secondary job: Generate API documentation
+  # This job only runs if the test job passes
+  docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Generate HTML documentation from JSDoc comments
+      - name: Generate JSDoc documentation
+        run: npm run docs
+
+      # Upload generated docs as an artifact
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-documentation
+          path: docs/
+          retention-days: 14
