@@ -1,0 +1,8 @@
+::backdrop {
+    background-image: linear-gradient(
+      180deg,
+      rgb(99, 22, 99),
+      rgb(5, 139, 5)
+    );
+    opacity: 0.75;
+  }
