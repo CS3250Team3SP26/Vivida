@@ -1,8 +1,190 @@
-::backdrop {
-    background-image: linear-gradient(
-      180deg,
-      rgb(99, 22, 99),
-      rgb(5, 139, 5)
-    );
-    opacity: 0.75;
+/*
+ * Popup Styles for Theme Group Switcher
+ * 
+ * Extension popup styling tips:
+ * - Keep it compact; users expect quick interactions
+ * - Use system fonts for native look
+ * - Dark mode support is nice since we're a THEME extension!
+ */
+
+/* 
+ * CSS Custom Properties (variables)
+ * Define colors once, use everywhere
+ */
+ :root {
+    --primary-color: #0060df;       /* Firefox blue */
+    --primary-hover: #003eaa;
+    --background: #ffffff;
+    --surface: #f9f9fa;
+    --text-primary: #15141a;
+    --text-secondary: #5b5b66;
+    --border-color: #cfcfd8;
+    --success-color: #058b00;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --border-radius: 4px;
+  }
+  
+  /*
+   * Reset and base styles
+   * Popups are small, so every pixel counts
+   */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    /* Set a fixed width for the popup */
+    width: 200px;
+    
+    /* Let height grow with content, but set a max */
+    min-height: 100px;
+    max-height: 600px;
+    
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    background-color: var(--background);
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--spacing-md);
+  }
+  
+  /*
+   * Header
+   */
+  .header {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .header h1 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /*
+   * Main content area
+   */
+  .main {
+    flex: 1;
+    overflow-y: auto;  /* Scroll if too many groups */
+  }
+  
+  .groups-section h2 {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  /*
+   * Groups list
+   */
+  .groups-list {
+    list-style: none;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .groups-list li {
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: 4px;
+    background-color: var(--surface);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  
+  .groups-list li:hover {
+    background-color: var(--border-color);
+  }
+  
+  /* Active/selected group */
+  .groups-list li.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  /* Loading state */
+  .groups-list li.loading {
+    color: var(--text-secondary);
+    font-style: italic;
+    cursor: default;
+  }
+  
+  .groups-list li.loading:hover {
+    background-color: var(--surface);
+  }
+  
+  /*
+   * Action buttons
+   */
+  .actions-section {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+  
+  .btn {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+  
+  .btn-secondary {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--border-color);
+  }
+  
+  /*
+   * Footer
+   */
+  .footer {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-secondary);
+  }
+  
+  /*
+   * Dark mode support
+   * Uses prefers-color-scheme media query
+   */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #2b2a33;
+      --surface: #42414d;
+      --text-primary: #fbfbfe;
+      --text-secondary: #cfcfd8;
+      --border-color: #5b5b66;
+    }
   }

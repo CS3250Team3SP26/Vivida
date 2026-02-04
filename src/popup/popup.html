@@ -1,6 +1,34 @@
-<dialog open>
-    <p>Test</p>
-    <form method="dialog">
-      <button>Close</button>
-    </form>
-  </dialog>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Theme Groups</h1>
+    </header>
+
+    <main class="main">
+      <section class="groups-section">
+        <h2>Your Groups</h2>
+        <ul class="groups-list" id="groupsList">
+          <li class="loading">Loading groups...</li>
+        </ul>
+      </section>
+    </main>
+
+    <div class="actions-section">
+      <button class="btn btn-primary">New Group</button>
+      <button class="btn btn-secondary">Settings</button>
+    </div>
+
+    <footer class="footer">
+      <small>Theme Group Switcher v1.0</small>
+    </footer>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
