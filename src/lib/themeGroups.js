@@ -44,11 +44,17 @@ class ThemeGroup {
             throw new TypeError('Theme must be a string');
         }
 
+        //validates that the string is not epmty or whitespaced
+        if (theme.trim() === '') {
+            throw new TypeError('Theme is empty or whitespaced, Ztheme must be a string');
+        }
+
         if (this.hasTheme(theme)) {
             return false; // Theme already exists
         }
 
         this.themes.push(theme);
+        return true; // Theme has been added successfully
 
     }// addTheme
 
@@ -68,6 +74,7 @@ class ThemeGroup {
         }
 
         this.themes = this.themes.filter(t => t !== theme);
+        return true; // Theme has been removed successfully
     }// removeTheme
 
     /**
