@@ -35,7 +35,7 @@ async function loadGroups() {
 
  * @param {string} id
  * @returns {Promise}
- */x
+ */
 async function saveActiveGroupId(id) {
     try {
         await browser.storage.local.set({ activeGroupId: id });
