@@ -1,8 +1,8 @@
 /**
  * @fileoverview Unit tests for themeAPI module
  */
-import { afterEach, beforeEach, jest } from '@jest/globals';
-import { getThemes } from '../../src/lib/themeAPI.js';
+import { afterEach, beforeEach, jest, test } from '@jest/globals';
+import { enableTheme, getThemes, isValidTheme } from '../../src/lib/themeAPI.js';
 
 describe('themeAPI Module', () => {
     let consoleLogSpy;
@@ -19,6 +19,8 @@ describe('themeAPI Module', () => {
         globalThis.browser = {
             management: {
                 getAll: jest.fn(),
+                enableTheme: jest.fn(),
+                get: jest.fn(),
             },
         };
     });
@@ -79,5 +81,83 @@ describe('themeAPI Module', () => {
         //Assert: Verify that the error is logged and an empty array is returned
         expect(consoleErrorSpy).toHaveBeenCalledWith("Error retrieving themes:", expect.any(Error));
         expect(themes).toEqual([]);
+    });
+
+    /* ============================================
+    * IS VALID THEME TESTS
+    * ============================================ */
+    test('isValidTheme should return true for a valid theme ID', async () => {
+        //Arrange: Mock the browser API to return a valid theme for the given ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'theme' });
+
+        //Act: Call the isValidTheme function with a valid theme ID
+        const result = await isValidTheme('valid-theme-id');
+
+        //Assert: Verify that the function returns true
+        expect(result).toBe(true);
+    });
+
+    test('isValidTheme should return false for a non-string or empty theme ID', async () => {
+        //Act & Assert: Call the isValidTheme function with invalid theme IDs and expect it to return false
+        expect(await isValidTheme(123)).toBe(false);
+        expect(await isValidTheme(null)).toBe(false);
+        expect(await isValidTheme(undefined)).toBe(false);
+        expect(await isValidTheme('')).toBe(false);
+    });
+
+    test('isValidTheme should return false for a non-theme ID', async () => {
+        //Arrange: Mock the browser API to return a non-theme for the given ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'extension' });
+
+        //Act: Call the isValidTheme function with a non-theme ID
+        const result = await isValidTheme('non-theme-id');
+
+        //Assert: Verify that the function returns false
+        expect(result).toBe(false);
+    });
+
+    test('isValidTheme should return false for an invalid theme ID', async () => {
+        //Arrange: Mock the browser API to throw an error for an invalid theme ID
+        globalThis.browser.management.get.mockRejectedValue(new Error('Theme not found'));
+
+        //Act: Call the isValidTheme function with an invalid theme ID
+        const result = await isValidTheme('invalid-theme-id');
+
+        //Assert: Verify that the function returns false
+        expect(result).toBe(false);
+    });
+
+    /* ============================================
+    * ENABLE THEME TESTS
+    * ============================================ */
+    test('enableTheme should enable the specified theme', async () => {
+        //Arrange: Mock the browser API to validate the theme and enable it
+        globalThis.browser.management.enableTheme.mockResolvedValue();
+            // Mock the isValidTheme function to return true for the valid theme ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'theme' });
+
+        //Act: Call the enableTheme function with a valid theme ID
+        await enableTheme('valid-theme-id');
+
+        //Assert: Verify that the theme is enabled
+        expect(globalThis.browser.management.enableTheme).toHaveBeenCalledWith('valid-theme-id', true);
+    });
+
+    test('enableTheme should throw an error if the theme ID is invalid', async () => {
+        //Arrange: Mock the browser API to validate the theme and return false
+        globalThis.browser.management.enableTheme.mockRejectedValue(new Error('Invalid theme ID'));
+
+        //Act: Call the enableTheme function with an invalid theme ID and expect it to throw an error
+        await expect(enableTheme('invalid-theme-id')).rejects.toThrow("Invalid theme ID");
+    });
+
+    test('enableTheme should throw an error if there is an issue enabling the theme', async () => {
+        //Arrange: Mock the browser API to throw an error when enabling the theme
+        globalThis.browser.management.enableTheme.mockRejectedValue(new Error('Failed to enable theme'));
+        // Mock the isValidTheme function to return true for the valid theme ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'theme' });
+
+        //Act: Call the enableTheme function with a valid theme ID and expect it to throw an error
+        await expect(enableTheme('valid-theme-id')).rejects.toThrow("Failed to enable theme");
     });
 });
