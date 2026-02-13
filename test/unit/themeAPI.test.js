@@ -2,7 +2,7 @@
  * @fileoverview Unit tests for themeAPI module
  */
 import { afterEach, beforeEach, jest, test } from '@jest/globals';
-import { enableTheme, getThemes, isValidTheme } from '../../src/lib/themeAPI.js';
+import { enableTheme, getThemes, disableTheme, isValidTheme } from '../../src/lib/themeAPI.js';
 
 describe('themeAPI Module', () => {
     let consoleLogSpy;
@@ -159,5 +159,35 @@ describe('themeAPI Module', () => {
 
         //Act: Call the enableTheme function with a valid theme ID and expect it to throw an error
         await expect(enableTheme('valid-theme-id')).rejects.toThrow("Failed to enable theme");
+    });
+
+    /* ============================================
+    * DISABLE THEME TESTS
+    * ============================================*/
+    test('disableTheme should disable the specified theme', async () => {
+        //Arrange: Mock the browser API to validate the theme and disable it
+        globalThis.browser.management.enableTheme.mockResolvedValue();
+        // Mock the isValidTheme function to return true for the valid theme ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'theme' });
+        //Act: Call the disableTheme function with a valid theme ID
+        await disableTheme('valid-theme-id');
+        //Assert: Verify that the theme is disabled
+        expect(globalThis.browser.management.enableTheme).toHaveBeenCalledWith('valid-theme-id', false);
+    });
+
+    test('disableTheme should throw an error if the theme ID is invalid', async () => {
+        //Arrange: Mock the browser API to validate the theme and return false
+        globalThis.browser.management.enableTheme.mockRejectedValue(new Error('Invalid theme ID'));
+        //Act: Call the disableTheme function with an invalid theme ID and expect it to throw an error
+        await expect(disableTheme('invalid-theme-id')).rejects.toThrow("Invalid theme ID");
+    });
+
+    test('disableTheme should throw an error if there is an issue disabling the theme', async () => {
+        //Arrange: Mock the browser API to throw an error when disabling the theme
+        globalThis.browser.management.enableTheme.mockRejectedValue(new Error('Failed to disable theme'));
+        // Mock the isValidTheme function to return true for the valid theme ID
+        globalThis.browser.management.get.mockResolvedValue({ type: 'theme' });
+        //Act: Call the disableTheme function with a valid theme ID and expect it to throw an error
+        await expect(disableTheme('valid-theme-id')).rejects.toThrow("Failed to disable theme");
     });
 });

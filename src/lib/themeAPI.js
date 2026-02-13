@@ -59,4 +59,19 @@ async function enableTheme(themeId) {
     }
 }
 
-export { getThemes, enableTheme, isValidTheme };
+async function disableTheme(themeId) {
+    // Validate the theme ID before attempting to disable it
+    const isValid = await isValidTheme(themeId);
+    if (!isValid) {
+        throw new Error("Invalid theme ID");
+    }
+    // Attempt to disable the theme
+    try {
+        await browser.management.enableTheme(themeId, false);
+    } catch (error) {
+        console.error("Error disabling theme:", error);
+        throw error;
+    }
+}
+
+export { getThemes, enableTheme, disableTheme, isValidTheme };
