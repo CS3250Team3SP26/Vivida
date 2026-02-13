@@ -2,7 +2,7 @@
  * @fileoverview Unit tests for themeAPI module
  */
 import { afterEach, beforeEach, jest, test } from '@jest/globals';
-import { enableTheme, getThemes, disableTheme, isValidTheme } from '../../src/lib/themeAPI.js';
+import { enableTheme, getCurrentTheme, getThemes, disableTheme, isValidTheme } from '../../src/lib/themeAPI.js';
 
 describe('themeAPI Module', () => {
     let consoleLogSpy;
@@ -81,6 +81,35 @@ describe('themeAPI Module', () => {
         //Assert: Verify that the error is logged and an empty array is returned
         expect(consoleErrorSpy).toHaveBeenCalledWith("Error retrieving themes:", expect.any(Error));
         expect(themes).toEqual([]);
+    });
+
+    /* ============================================
+    * GET CURRENT THEME TESTS
+    * ============================================ */
+    test('getCurrentTheme should return the currently active theme', async () => {
+        //Arrange: Mock the browser API to return a list of themes with one active theme
+        globalThis.browser.management.getAll.mockResolvedValue([
+            { id: '1', type: 'theme', name: 'Dark Theme', enabled: false },
+            { id: '2', type: 'theme', name: 'Light Theme', enabled: true },
+        ]);
+
+        //Act: Call the getCurrentTheme function
+        const currentTheme = await getCurrentTheme();
+
+        //Assert: Verify that the correct theme is returned
+        expect(currentTheme).toEqual([{ id: '2', type: 'theme', name: 'Light Theme', enabled: true }]);
+    });
+
+    test('getCurrentTheme should return null if no theme is active', async () => {
+        //Arrange: Mock the browser API to return a list of themes with no active theme
+        globalThis.browser.management.getAll.mockResolvedValue([
+            { id: '1', type: 'theme', name: 'Dark Theme', enabled: false },
+            { id: '2', type: 'theme', name: 'Light Theme', enabled: false },
+        ]);
+        //Act: Call the getCurrentTheme function
+        const currentTheme = await getCurrentTheme();
+        //Assert: Verify that null is returned
+        expect(currentTheme).toEqual([])
     });
 
     /* ============================================

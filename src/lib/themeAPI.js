@@ -6,7 +6,7 @@
 
 /**
  * Retrieves the list of installed themes from the browser.
- * @returns {Promise<Array>} - A promise that resolves to an array of theme objects.
+ * @returns {Promise<Array>} - A promise that resolves to an array of ExtensionInfo objects.
  */
 async function getThemes() {
     try {
@@ -18,6 +18,16 @@ async function getThemes() {
         console.error("Error retrieving themes:", error);
         return [];
     }
+}
+
+/**
+ * Retrieves the currently active theme from the browser.
+ * @returns {Promise<Array>} - A promise that resolves to an array of ExtensionInfo objects for active themes, or an empty array if no theme is active.
+ */
+async function getCurrentTheme() {
+    const allExtensions = await getThemes();
+    const currentTheme = allExtensions.filter(ext => ext.enabled);
+    return currentTheme;
 }
 
 /**
@@ -59,6 +69,12 @@ async function enableTheme(themeId) {
     }
 }
 
+/**
+ * Disables a theme by its ID.
+ * @param {String} themeId - The ID of the theme to disable.
+ * @return {Promise<void>} - A promise that resolves when the theme is disabled.
+ * @throws {Error} - If the theme ID is invalid or if there is an error disabling the theme.
+ */
 async function disableTheme(themeId) {
     // Validate the theme ID before attempting to disable it
     const isValid = await isValidTheme(themeId);
@@ -74,4 +90,6 @@ async function disableTheme(themeId) {
     }
 }
 
-export { getThemes, enableTheme, disableTheme, isValidTheme };
+
+
+export { getThemes, getCurrentTheme, enableTheme, disableTheme, isValidTheme };
