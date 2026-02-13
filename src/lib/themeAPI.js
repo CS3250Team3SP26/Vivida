@@ -27,6 +27,7 @@ async function getThemes() {
 async function getCurrentTheme() {
     const allExtensions = await getThemes();
     const currentTheme = allExtensions.filter(ext => ext.enabled);
+    console.log("Current active theme:", currentTheme);
     return currentTheme;
 }
 
@@ -63,6 +64,7 @@ async function enableTheme(themeId) {
     // Attempt to enable the theme
     try {
         await browser.management.enableTheme(themeId, true);
+        console.log(`Theme with ID ${themeId} has been enabled.`);
     } catch (error) {
         console.error("Error enabling theme:", error);
         throw error;
@@ -84,12 +86,49 @@ async function disableTheme(themeId) {
     // Attempt to disable the theme
     try {
         await browser.management.enableTheme(themeId, false);
+        console.log(`Theme with ID ${themeId} has been disabled.`);
     } catch (error) {
         console.error("Error disabling theme:", error);
         throw error;
     }
 }
 
+/**
+ * Checks if a theme is currently enabled by its ID.
+ * Does not rely on the isValidTheme function to ensure that the theme ID is valid before checking if it's enabled.
+ * Instead preforms the check directly and handles any errors that may arise from an invalid theme ID.
+ * @param {String} themeId - The ID of the theme to check.
+ * @returns {Promise<Boolean>} - A promise that resolves to true if the theme is enabled, false otherwise.
+ */
+async function isThemeEnabled(themeId) {
+    if (typeof themeId !== 'string' || themeId.trim() === '') {
+        return false; // Invalid theme ID
+    }
+    try {
+        const themeInfo = await browser.management.get(themeId);
+        return themeInfo.type === 'theme' && themeInfo.enabled;
+    } catch (error) {
+        console.error("Error checking if theme is enabled:", error);
+        return false; // Theme ID does not exist or is not a theme
+    }
+}
 
+async function getThemeById(themeId) {
+    if (typeof themeId !== 'string' || themeId.trim() === '') {
+        return false; // Invalid theme ID
+    }
+    try {
+        const themeInfo = await browser.management.get(themeId);
+        if (themeInfo.type === 'theme') {
+            console.log(`Theme info for ID ${themeId}:`, themeInfo);
+            return themeInfo;
+        } else {
+            return false; // Theme ID does not correspond to a theme
+        }
+    } catch (error) {
+        console.error("Error checking theme info", error);
+        return false; // Theme ID does not exist or is not a theme
+    }
+}
 
-export { getThemes, getCurrentTheme, enableTheme, disableTheme, isValidTheme };
+export { getThemes, getCurrentTheme, enableTheme, disableTheme, isValidTheme, isThemeEnabled, getThemeById };
