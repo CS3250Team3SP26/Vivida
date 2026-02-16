@@ -2,7 +2,13 @@
  * @fileoverview Unit tests for StorageService module
  */
 
-import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from '../../src/lib/storageServiceWrapper.js';
+// Use require for CommonJS compatibility
+const { 
+    saveGroups, 
+    loadGroups, 
+    saveActiveGroupId, 
+    loadActiveGroupId 
+} = require('../../src/lib/storageServiceWrapper.js');
 
 describe('StorageService', () => {
 
