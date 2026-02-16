@@ -1,7 +1,8 @@
 /**
  * @fileoverview Unit tests for StorageService module
  */
-import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from '../../src/lib/storageService';
+
+import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from '../../src/lib/storageServiceWrapper.js';
 
 describe('StorageService', () => {
 
