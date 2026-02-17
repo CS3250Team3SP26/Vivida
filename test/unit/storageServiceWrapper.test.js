@@ -32,6 +32,21 @@ describe('StorageService', () => {
     /* ============================================
     * GROUP STORAGE TESTS
     * ============================================ */
+
+    beforeAll(() => {
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+        console.log.mockRestore();
+        console.error.mockRestore();
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('saveGroups', () => {
         test('should successfully save an array of groups', async () => {
             const mockGroups = [{ id: '1', name: 'Dark Mode' }];
