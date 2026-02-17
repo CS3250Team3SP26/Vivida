@@ -18,7 +18,6 @@ async function saveGroups(groups) {
 }
 
 /**
-
  * @returns {Promise<Array>}
  */
 async function loadGroups() {
