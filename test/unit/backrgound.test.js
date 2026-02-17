@@ -8,9 +8,9 @@ const mockStorageService = {
     saveActiveGroupId: jest.fn()
 };
 
-global.StorageService = jest.fn(() => mockStorageService);
+globalThis.StorageService = jest.fn(() => mockStorageService);
 
-global.browser = {
+globalThis.browser = {
     management: {
         getAll: jest.fn()
     },
