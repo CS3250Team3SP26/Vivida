@@ -59,9 +59,5 @@ async function loadActiveGroupId() {
     }
 }
 
-module.exports = { 
-    saveGroups, 
-    loadGroups, 
-    saveActiveGroupId, 
-    loadActiveGroupId 
-};
+// Export so other files can use these helpers
+export { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId };
