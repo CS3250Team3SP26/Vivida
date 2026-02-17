@@ -2,13 +2,14 @@
  * @fileoverview Unit tests for StorageService module
  */
 
-// Use require for CommonJS compatibility
-const { 
+// Import the functions to be tested
+import { jest } from '@jest/globals';
+import { 
     saveGroups, 
     loadGroups, 
     saveActiveGroupId, 
     loadActiveGroupId 
-} = require('../../src/lib/storageServiceWrapper.js');
+} from '../../src/lib/storageServiceWrapper.js';
 
 describe('StorageService', () => {
 

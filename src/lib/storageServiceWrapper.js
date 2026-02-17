@@ -59,9 +59,4 @@ async function loadActiveGroupId() {
     }
 }
 
-module.exports = { 
-    saveGroups, 
-    loadGroups, 
-    saveActiveGroupId, 
-    loadActiveGroupId 
-};
+export { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId };
