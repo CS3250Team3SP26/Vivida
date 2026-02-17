@@ -1,7 +1,7 @@
 /**
  * @fileoverview Unit tests for themeGroups module
  */
-const { ThemeGroup } = require('../../src/lib/themeGroups');
+import { ThemeGroup } from'../../src/lib/themeGroups.js';
 
 describe('ThemeGroup Class', () => {
   let group;                
@@ -177,7 +177,7 @@ describe('ThemeGroup Class', () => {
             expect(group.hasTheme('Dark Theme')).toBe(true);
         });
 
-        test('shoulf return dalse when theme dont exist', () => {
+        test('should return false when theme does not exist', () => {
             expect(group.hasTheme('Non Existing Theme')).toBe(false);
         });
 
@@ -185,6 +185,12 @@ describe('ThemeGroup Class', () => {
             group.addTheme('Dark Theme');
             expect(group.hasTheme('dark theme')).toBe(false);
             expect(group.hasTheme('DARK THEM')).toBe(false);
+        });
+
+        test('should throw TypeError if theme is not a string when checking', () => {
+            expect(() => group.hasTheme(123)).toThrow(TypeError);
+            expect(() => group.hasTheme(null)).toThrow(TypeError);
+            expect(() => group.hasTheme(undefined)).toThrow(TypeError);
         });
 
     })
