@@ -1,9 +1,9 @@
 /**
  * @fileoverview Background script for Theme Groups extension
- * Handles message routing and delegates storage operations to StorageService
+ * Handles message routing and delegates storage operations to StorageServiceWrapper
  * @module background/background
  */
-
+import storageServiceWrapper from '../lib/storageServiceWrapper.js';
 // Import the storage service (declared in manifest.json)
 // The service is loaded via script tag, so it's available globally
 
@@ -13,9 +13,9 @@
 
 /**
  * Storage service instance for managing theme group data
- * @type {StorageService}
+ * @type {StorageServiceWrapper}
  */
-const storageService = new StorageService();
+const storageService = new storageServiceWrapper();
 
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
@@ -82,7 +82,7 @@ const messageHandlers = {
      * @param {Object} message - The message object
      * @returns {Promise<Object>} Response with groups data
      */
-    'GET_ALL_GROUPS': async (message) => {
+    'GET_ALL_GROUPS': async (_message) => {
         const groups = await storageService.loadGroups();
         return { success: true, data: groups };
     },
@@ -112,7 +112,7 @@ const messageHandlers = {
      * @param {Object} message - The message object
      * @returns {Promise<Object>} Response with active group ID
      */
-    'GET_ACTIVE_GROUP': async (message) => {
+    'GET_ACTIVE_GROUP': async (_message) => {
         const activeGroup = await storageService.loadActiveGroupId();
         return { success: true, data: activeGroup };
     },
@@ -132,7 +132,7 @@ const messageHandlers = {
      * @param {Object} message - The message object
      * @returns {Promise<Object>} Response with installed themes data
      */
-    'GET_INSTALLED_THEMES': async (message) => {
+    'GET_INSTALLED_THEMES': async (_message) => {
         const themes = await getInstalledThemes();
         return { success: true, data: themes };
     }
@@ -200,7 +200,5 @@ console.log('[Background] Theme Groups background script loaded successfully!');
 setInterval(() => {
     // Heartbeat to keep script alive
 }, 10000);
-// Export for testing (Node.js environment only)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { initialize, getInstalledThemes, handleMessage };
-}
+    // Export for testing (Node.js environment only)
+ export{ initialize, getInstalledThemes, handleMessage };
