@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Groups</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <header>
+        <h1>Theme Management</h1>
+    </header>
+
+    <main>
+        <section id="management-controls">
+            <h2>Management Controls</h2>
+            <button id="create-group-btn">Create New Group</button>
+            <button id="import-groups">Import Data</button>
+        </section>
+
+        <hr>
+
+        <section id="theme-groups-container">
+            <h2>Theme Groups</h2>
+            <div id="groups-list">
+                <p>No groups created yet.</p>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="unassigned-themes">
+            <h2>Unassigned Themes</h2>
+            <div id="unassigned-list" class="theme-list">
+                <p>All themes are currently assigned.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="options.js"></script>
+</body>
+</html>
