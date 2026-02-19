@@ -194,11 +194,3 @@ browser.runtime.onMessage.addListener(handleMessage);
 initialize();
 
 console.log('[Background] Theme Groups background script loaded successfully!');
-
-// Keep the background script alive in Firefox
-// This prevents Firefox from unloading it too quickly
-setInterval(() => {
-    // Heartbeat to keep script alive
-}, 10000);
-    // Export for testing (Node.js environment only)
- export{ initialize, getInstalledThemes, handleMessage };
