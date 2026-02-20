@@ -203,7 +203,7 @@ function handleMessage(message, sender, sendResponse) {
 
 browser.runtime.onMessage.addListener(handleMessage);
 
-initialize();
+await initialize();
 
 console.log('[Background] Theme Groups background script loaded successfully!');
 
