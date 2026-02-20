@@ -49,53 +49,110 @@ async function initialize() {
 const messageHandlers = {
     // -- Storage handlers --
 
+    /**
+     * 
+     * @param {Object} _message
+     * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and serialized theme groups data
+     */
     'GET_ALL_GROUPS': async (_message) => {
         const groups = await loadGroups();
         return { success: true, data: groups };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to save
+     * @param {Array<string>} message.themes - Array of theme extension IDs to associate with the group
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
     'SAVE_GROUP': async (message) => {
-        await saveGroup(message.groupName, message.themes);
+        await saveGroup(message.groupId, message.themes);
         return { success: true };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to delete
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
     'DELETE_GROUP': async (message) => {
-        await deleteGroup(message.groupName);
+        await deleteGroup(message.groupId);
         return { success: true };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to set as active
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
+    'SET_ACTIVE_GROUP': async (message) => {
+        await saveActiveGroupId(message.groupId);
+        return { success: true };
+    },
+
+    /**
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: string}>} - Response containing success status and active group ID
+     */
     'GET_ACTIVE_GROUP': async (_message) => {
         const activeGroup = await loadActiveGroupId();
         return { success: true, data: activeGroup };
     },
 
-    'SET_ACTIVE_GROUP': async (message) => {
-        await saveActiveGroupId(message.groupName);
-        return { success: true };
-    },
-
     // -- Theme API handlers --
 
+    /**
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and array of installed themes
+     */
     'GET_INSTALLED_THEMES': async (_message) => {
         const themes = await getThemes();
         return { success: true, data: themes };
     },
 
+    /**
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: Object}>} - Response containing success status and current theme information
+     */
     'GET_CURRENT_THEME': async (_message) => {
         const theme = await getCurrentTheme();
         return { success: true, data: theme };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to enable
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
     'ENABLE_THEME': async (message) => {
         await enableTheme(message.themeId);
         return { success: true };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to disable
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
     'DISABLE_THEME': async (message) => {
         await disableTheme(message.themeId);
         return { success: true };
     },
 
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to get
+     * @returns {Promise<{success: boolean, data: Object}>} - Response containing success status and theme information
+     */
     'GET_THEME_BY_ID': async (message) => {
         const theme = await getThemeById(message.themeId);
         return { success: true, data: theme };

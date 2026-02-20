@@ -30,9 +30,7 @@ globalThis.browser = {
     }
 };
 
-// Imports must come AFTER jest.unstable_mockModule
 const { initialize, handleMessage } = await import('../../src/background/background.js');
-
 const { loadGroups, saveGroups, loadActiveGroupId } = await import('../../src/lib/storageServiceWrapper.js');
 const { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } = await import('../../src/lib/themeAPI.js');
 
