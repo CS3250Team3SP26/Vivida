@@ -30,6 +30,11 @@ globalThis.browser = {
     }
 };
 
+// Suppress console output during initialization
+jest.spyOn(console, 'log').mockImplementation(() => {});
+jest.spyOn(console, 'warn').mockImplementation(() => {});
+jest.spyOn(console, 'error').mockImplementation(() => {});
+
 const { initialize, handleMessage } = await import('../../src/background/background.js');
 const { loadGroups, saveGroups, loadActiveGroupId } = await import('../../src/lib/storageServiceWrapper.js');
 const { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } = await import('../../src/lib/themeAPI.js');
@@ -39,8 +44,16 @@ const { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } = 
 // for handler chains that resolve across multiple async hops.
 const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
 
+// Mock console methods to prevent actual logging during tests
 beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+    jest.restoreAllMocks();
 });
 
 // ============================================================================
