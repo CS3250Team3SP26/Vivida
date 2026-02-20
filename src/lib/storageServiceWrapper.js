@@ -31,13 +31,60 @@ async function saveGroups(groups) {
  * Returns plain objects, not ThemeGroup instances
  * @returns {Promise<Array<Object>>} Array of serialized theme group objects (empty if none exist)
  * @throws {Error} If there is an error during the load operation
- */
+*/
 async function loadGroups() {
     try {
         const result = await browser.storage.local.get('groups');
         return result.groups || [];
     } catch (error) {
         console.error('Could not load groups:', error);
+        throw error;
+    }
+}
+
+/**
+ * Saves a single theme group by name, updating if it already exists
+ * @param {string} Id - The name of the group to save
+ * @param {Array<string>} themeIds - Array of theme extension IDs to associate with the group
+ */
+async function saveGroup(Id, themeIds) {
+    if (typeof Id !== 'string' || !Array.isArray(themeIds)) {
+        throw new TypeError('Invalid input: Id should be a string and themeIds should be an array');
+    }
+    try {
+        const existingGroups = await loadGroups();
+        const groupIndex = existingGroups.findIndex(group => group.id === Id);
+        // If group with the same name exists, update it; otherwise, add a new group
+        if (groupIndex !== -1) {
+            existingGroups[groupIndex] = {
+                ...existingGroups[groupIndex],
+                id: Id,
+                themeIds: themeIds,
+            };
+        } else {
+            existingGroups.push({
+                id: Id,
+                themeIds: themeIds,
+            });
+        }
+            await saveGroups(existingGroups);
+    } catch (error) {
+        console.error('Could not save group:', error);
+        throw error;
+    }
+}
+
+async function deleteGroup(Id) {
+    if (typeof Id !== 'string') {
+        throw new TypeError('Invalid input: Id should be a string');
+    }
+    // To delete a group, we load all groups, filter out the one to delete, and save the updated list
+    try {
+        const existingGroups = await loadGroups();
+        const updatedGroups = existingGroups.filter(group => group.id !== Id);
+        await saveGroups(updatedGroups);
+    } catch (error) {
+        console.error('Could not delete group:', error);
         throw error;
     }
 }
@@ -77,4 +124,4 @@ async function loadActiveGroupId() {
     }
 }
 
-export { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId };
+export { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId, saveGroup, deleteGroup };
