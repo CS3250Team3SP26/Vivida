@@ -1,7 +1,7 @@
 /**
  * @fileoverview Unit tests for themeGroups module
  */
-const { ThemeGroup } = require('../../src/lib/themeGroups');
+import { ThemeGroup } from '../../src/lib/themeGroups';
 
 describe('ThemeGroup Class', () => {
   let group;                
@@ -185,6 +185,11 @@ describe('ThemeGroup Class', () => {
             group.addTheme('Dark Theme');
             expect(group.hasTheme('dark theme')).toBe(false);
             expect(group.hasTheme('DARK THEM')).toBe(false);
+        });
+
+        test('should throw TypeError for non-string theme', () => {
+        expect(() => group.hasTheme(123)).toThrow(TypeError);
+        expect(() => group.hasTheme(null)).toThrow(TypeError);
         });
 
     })

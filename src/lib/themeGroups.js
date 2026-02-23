@@ -101,5 +101,4 @@ class ThemeGroup {
  
 }// ThemeGroup
 
-// Export for use in other modules
-module.exports = { ThemeGroup };
+export { ThemeGroup };

@@ -8,32 +8,39 @@
  * 
  * @module tests/themeGroupManager.test
  */
+import { jest } from '@jest/globals';
 
-// Mock the storage service
-jest.mock('../../src/lib/storageServiceWrapper', () => ({
+// In ESM mode, jest.mock() is not available.
+// jest.unstable_mockModule() must be called BEFORE dynamic imports.
+jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
     saveGroups: jest.fn().mockResolvedValue(undefined),
     loadGroups: jest.fn().mockResolvedValue([]),
     saveActiveGroupId: jest.fn().mockResolvedValue(undefined),
     loadActiveGroupId: jest.fn().mockResolvedValue(null)
 }));
 
-const { ThemeGroupManager } = require('../../src/lib/themeGroupManager');
-const { ThemeGroup } = require('../../src/lib/themeGroups');
-
-
-const {
-    saveGroups,
-    loadGroups,
-    saveActiveGroupId,
-    loadActiveGroupId
-} = require('../../src/lib/storageServiceWrapper');
+// Dynamic imports must come AFTER unstable_mockModule calls
+const { ThemeGroupManager } = await import('../../src/lib/themeGroupManager');
+const { ThemeGroup } = await import('../../src/lib/themeGroups');
+const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
+    await import('../../src/lib/storageServiceWrapper');
 
 describe('ThemeGroupManager', () => {
     let manager;
+    let consoleSpy;
 
     beforeEach(() => {
         manager = new ThemeGroupManager();
         jest.clearAllMocks();
+        consoleSpy = {
+            log: jest.spyOn(console, 'log').mockImplementation(() => {}),
+            error: jest.spyOn(console, 'error').mockImplementation(() => {})
+        };
+    });
+
+    afterEach(() => {
+        consoleSpy.log.mockRestore();
+        consoleSpy.error.mockRestore();
     });
 
     describe('constructor', () => {
@@ -461,6 +468,19 @@ describe('ThemeGroupManager', () => {
             manager.fromJSON(data);
 
             expect(manager.getActiveGroup()).toBeNull();
+        });
+
+        test('should track the highest ID counter when counters are out of order', () => {
+            const data = [
+                { id: 'group_123_10', name: 'Group 1', themes: [] },
+                { id: 'group_456_3', name: 'Group 2', themes: [] }  // lower counter second
+            ];
+
+            manager.fromJSON(data);
+
+            const { id } = manager.createGroup('New Group');
+            // Counter should be 11 (max was 10), not 4
+            expect(id).toMatch(/group_\d+_11/);
         });
 
         test('should handle empty array', () => {

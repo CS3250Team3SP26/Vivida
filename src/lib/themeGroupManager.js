@@ -7,8 +7,8 @@
  * @module lib/themeGroupManager
  */
 
-const { ThemeGroup } = require('./themeGroups');
-const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } = require('./storageServiceWrapper');
+import { ThemeGroup } from './themeGroups';
+import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper';
 
 /**
  * themeGroupManager manages a collection of themegroup instances
@@ -368,4 +368,4 @@ class ThemeGroupManager {
         
     }
     
-module.exports = { ThemeGroupManager };
+export { ThemeGroupManager };

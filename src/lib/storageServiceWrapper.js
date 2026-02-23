@@ -4,11 +4,10 @@
  */
 
 /**
-
  * @param {Array} groups
  * @returns {Promise}
  */
-async function saveGroups(groups) {
+export async function saveGroups(groups) {
     try {
         await browser.storage.local.set({ groups: groups });
         console.log('✅ Groups saved successfully!');
@@ -21,7 +20,7 @@ async function saveGroups(groups) {
 /**
  * @returns {Promise<Array>}
  */
-async function loadGroups() {
+export async function loadGroups() {
     try {
         const result = await browser.storage.local.get('groups');
         return result.groups || [];
@@ -32,11 +31,10 @@ async function loadGroups() {
 }
 
 /**
-
  * @param {string} id
  * @returns {Promise}
  */
-async function saveActiveGroupId(id) {
+export async function saveActiveGroupId(id) {
     try {
         await browser.storage.local.set({ activeGroupId: id });
         console.log('✅ Active group ID saved:', id);
@@ -49,7 +47,7 @@ async function saveActiveGroupId(id) {
 /**
  * @returns {Promise<string|null>}
  */
-async function loadActiveGroupId() {
+export async function loadActiveGroupId() {
     try {
         const result = await browser.storage.local.get('activeGroupId');
         return result.activeGroupId || null;
@@ -58,11 +56,3 @@ async function loadActiveGroupId() {
         return null; // Return null if something breaks
     }
 }
-
-// Export so other files can use these helpers
-module.exports = {
-  saveGroups,
-  loadGroups,
-  saveActiveGroupId,
-  loadActiveGroupId
-};
