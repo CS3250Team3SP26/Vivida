@@ -29,7 +29,6 @@ class ThemeGroup {
         }
         this.name = name;
         this.themes = [...themes];
-        this.id = 'group-' + Date.now() + '-' + Math.floor(Math.random() * 1000); // Generate a unique ID for the group
     }// constructor
 
     /**
@@ -102,5 +101,4 @@ class ThemeGroup {
  
 }// ThemeGroup
 
-// Export for use in other modules
 export { ThemeGroup };
