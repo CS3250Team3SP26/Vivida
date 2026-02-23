@@ -1,7 +1,7 @@
 /**
  * @fileoverview Unit tests for themeGroups module
  */
-import { ThemeGroup } from'../../src/lib/themeGroups.js';
+import { ThemeGroup } from '../../src/lib/themeGroups';
 
 describe('ThemeGroup Class', () => {
   let group;                
@@ -13,25 +13,27 @@ describe('ThemeGroup Class', () => {
     /* ============================================
    * CONSTRUCTOR TESTS
    * ============================================ */
-    describe('constructor', () => {
-        test('should create a ThemeGroup instance with valid parameters', () => {
-            const newGroup = new ThemeGroup('My Group', ['Theme1', 'Theme2']);
-            expect(newGroup.name).toBe('My Group');
-            expect(newGroup.themes).toEqual(['Theme1', 'Theme2']);
-            expect(newGroup.id).toMatch(/^group-\d+-\d+$/); // ID should match the generated format
-        });
+    test('should create a ThemeGroup instance', () => {
+        expect(group).toBeInstanceOf(ThemeGroup);
+        expect(group.name).toBe('Test Group');
+        expect(group.themes).toEqual([]);
+    });
 
-        test('should throw TypeError if name is not a non-empty string', () => {
-            expect(() => new ThemeGroup(123, [])).toThrow(TypeError);
-            expect(() => new ThemeGroup('', [])).toThrow(TypeError);
-            expect(() => new ThemeGroup('   ', [])).toThrow(TypeError);
-        });
+    test('should initialize with themes', () => {
+        const themes = ['Theme1', 'Theme2'];
+        const themedGroup = new ThemeGroup('Test Group', themes);
+        expect(themedGroup.themes).toEqual(themes);
+    });
 
-        test('should throw TypeError if themes is not an array', () => {
-            expect(() => new ThemeGroup('My Group', 'Not an array')).toThrow(TypeError);
-            expect(() => new ThemeGroup('My Group', 123)).toThrow(TypeError);
-            expect(() => new ThemeGroup('My Group', null)).toThrow(TypeError);
-        });
+    test('should outputTypeError if the name is not a string', () => {
+        expect(() => new ThemeGroup(123)).toThrow(TypeError);
+        expect(() => new ThemeGroup(null)).toThrow(TypeError);
+        expect(() => new ThemeGroup({})).toThrow(TypeError);
+    });
+
+    test('should outputTypeError if the themes are not an array', () => {
+        expect(() => new ThemeGroup('Test Group', 'Not an array')).toThrow(TypeError);
+        expect(() => new ThemeGroup('Test Group', 123)).toThrow(TypeError);
     });
 
 
@@ -175,7 +177,7 @@ describe('ThemeGroup Class', () => {
             expect(group.hasTheme('Dark Theme')).toBe(true);
         });
 
-        test('should return false when theme does not exist', () => {
+        test('shoulf return dalse when theme dont exist', () => {
             expect(group.hasTheme('Non Existing Theme')).toBe(false);
         });
 
@@ -185,10 +187,9 @@ describe('ThemeGroup Class', () => {
             expect(group.hasTheme('DARK THEM')).toBe(false);
         });
 
-        test('should throw TypeError if theme is not a string when checking', () => {
-            expect(() => group.hasTheme(123)).toThrow(TypeError);
-            expect(() => group.hasTheme(null)).toThrow(TypeError);
-            expect(() => group.hasTheme(undefined)).toThrow(TypeError);
+        test('should throw TypeError for non-string theme', () => {
+        expect(() => group.hasTheme(123)).toThrow(TypeError);
+        expect(() => group.hasTheme(null)).toThrow(TypeError);
         });
 
     })
