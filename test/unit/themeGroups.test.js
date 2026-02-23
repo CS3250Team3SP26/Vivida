@@ -13,27 +13,25 @@ describe('ThemeGroup Class', () => {
     /* ============================================
    * CONSTRUCTOR TESTS
    * ============================================ */
-    test('should create a ThemeGroup instance', () => {
-        expect(group).toBeInstanceOf(ThemeGroup);
-        expect(group.name).toBe('Test Group');
-        expect(group.themes).toEqual([]);
-    });
+    describe('constructor', () => {
+        test('should create a ThemeGroup instance with valid parameters', () => {
+            const newGroup = new ThemeGroup('My Group', ['Theme1', 'Theme2']);
+            expect(newGroup.name).toBe('My Group');
+            expect(newGroup.themes).toEqual(['Theme1', 'Theme2']);
+            expect(newGroup.id).toMatch(/^group-\d+-\d+$/); // ID should match the generated format
+        });
 
-    test('should initialize with themes', () => {
-        const themes = ['Theme1', 'Theme2'];
-        const themedGroup = new ThemeGroup('Test Group', themes);
-        expect(themedGroup.themes).toEqual(themes);
-    });
+        test('should throw TypeError if name is not a non-empty string', () => {
+            expect(() => new ThemeGroup(123, [])).toThrow(TypeError);
+            expect(() => new ThemeGroup('', [])).toThrow(TypeError);
+            expect(() => new ThemeGroup('   ', [])).toThrow(TypeError);
+        });
 
-    test('should outputTypeError if the name is not a string', () => {
-        expect(() => new ThemeGroup(123)).toThrow(TypeError);
-        expect(() => new ThemeGroup(null)).toThrow(TypeError);
-        expect(() => new ThemeGroup({})).toThrow(TypeError);
-    });
-
-    test('should outputTypeError if the themes are not an array', () => {
-        expect(() => new ThemeGroup('Test Group', 'Not an array')).toThrow(TypeError);
-        expect(() => new ThemeGroup('Test Group', 123)).toThrow(TypeError);
+        test('should throw TypeError if themes is not an array', () => {
+            expect(() => new ThemeGroup('My Group', 'Not an array')).toThrow(TypeError);
+            expect(() => new ThemeGroup('My Group', 123)).toThrow(TypeError);
+            expect(() => new ThemeGroup('My Group', null)).toThrow(TypeError);
+        });
     });
 
 
