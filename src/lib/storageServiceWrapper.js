@@ -1,6 +1,7 @@
 /**
  * @fileoverview Storage service wrapper for theme group management
  * Stores and retrieves serialized theme group objects from browser.storage.local
+ * @module lib/storageServiceWrapper
  */
 
 /**
