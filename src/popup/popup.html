@@ -1,38 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ThemeGroups</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Theme Group Switcher</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
+  <body>
+    <div class="popup-container">
 
-<body>
-  <div class="container">
-    <header class="header">
-      <h1>Theme Groups</h1>
-    </header>
+      <!-- Header -->
+      <header class="popup-header">
+        <h1 class="current-group">Current Group Name</h1>
+      </header>
 
-    <main class="main">
-      <section class="groups-section">
-        <h2>Your Groups</h2>
-        <ul class="groups-list" id="groupsList">
-          <li class="loading">Loading groups...</li>
+      <!-- Body -->
+      <main class="popup-body">
+        <ul class="theme-list" aria-label="Theme options">
+          <li><button class="theme-item" type="button">Theme Option 1</button></li>
+          <li><button class="theme-item" type="button">Theme Option 2</button></li>
+          <li><button class="theme-item" type="button">Theme Option 3</button></li>
+          <li><button class="theme-item" type="button">Theme Option 4</button></li>
+          <li><button class="theme-item" type="button">Theme Option 5</button></li>
+          <li><button class="theme-item" type="button">Theme Option 6</button></li>
+          <li><button class="theme-item" type="button">Theme Option 7</button></li>
         </ul>
-      </section>
-    </main>
+      </main>
 
-    <div class="actions-section">
-      <button class="btn btn-primary">New Group</button>
-      <button class="btn btn-secondary">Settings</button>
+      <!-- Footer -->
+      <footer class="popup-footer">
+        <button class="manage-btn" type="button">Manage Groups</button>
+      </footer>
+
     </div>
-
-    <footer class="footer">
-      <small>Theme Group Switcher v0.2</small>
-    </footer>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-
+  </body>
 </html>
