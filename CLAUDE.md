@@ -123,3 +123,25 @@ If any step fails, the pipeline fails and the PR cannot be merged (assuming bran
 Team members may have varying experience levels with JavaScript and web development. Claude should gauge the person's familiarity and adjust explanations accordingly. It's always better to over-explain than to assume knowledge that isn't there.
 
 When providing feedback on code, Claude should be constructive and specific, explaining not just what to change but why the change improves the code.
+
+## Group ID System — Developer Reference
+
+### What Changed
+
+Storage and message handlers now use groupId instead of groupName as the primary identifier for theme groups. When sending messages from the popup to the background script, use groupId for any group operation and themeId for any theme operation.
+Why IDs Instead of Names?
+
+Group names are user-facing and can change. A user might rename "Dark Mode Collection" to "Night Themes" and any logic that tracked that group by name would silently break. IDs are generated once at creation and never change, so they remain a stable reference point regardless of what the user does with the name.
+
+There's also the collision problem. Two groups could have the same name — nothing prevents a user from creating "My Favorites" twice. IDs are generated with a timestamp and random component, making collisions practically impossible.
+
+### Message Conventions
+
+When the popup sends messages to the background script, follow this pattern:
+
+OperationProperty to useExampleSave, delete, or activate a groupgroupId{ type: 'DELETE_GROUP', groupId: group.id }Enable, disable, or get a themethemeId{ type: 'ENABLE_THEME', themeId: theme.id }
+
+Mixing these up is the most likely source of bugs when writing popup code, so keep this distinction in mind.
+What This Means When Writing the Popup
+
+When you retrieve a group from storage it will come back as an object with an id property. Hold onto that id — it's what you pass in messages. Display the name to the user, but never use name as a key for storage or message operations.
