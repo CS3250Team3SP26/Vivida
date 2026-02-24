@@ -32,7 +32,7 @@ const groupsList = document.getElementById('groupsList');
       } else {
       groupsList.innerHTML = '<li class = "loading">Failed to load gropups</li>';
       }
-    } catch (_error) {
+    } catch  {
       groupsList.innerHTML = '<li class = "loading">Failed to load groups</li>';
     }
   }
