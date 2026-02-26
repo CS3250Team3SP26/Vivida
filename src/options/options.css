@@ -25,7 +25,7 @@ section {
 h2 {
     margin-top: 0;
     font-size: 1.2rem;
-    color: #0060df; /* Firefox-style blue */
+    color: #df0000; /* Firefox-style blue */
 }
 
 /* Management Controls styling */
@@ -37,15 +37,15 @@ h2 {
 button {
     padding: 8px 16px;
     cursor: pointer;
-    background-color: #0060df;
-    color: white;
+    background-color: #196b1f;
+    color: rgb(255, 255, 255);
     border: none;
     border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 button:hover {
-    background-color: #003eaa;
+    background-color: #196b1f;
 }
 
 /* Theme List Layouts */
