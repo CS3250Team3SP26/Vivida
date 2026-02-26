@@ -4,9 +4,9 @@
  * @module background/background
  */
 
-import { ThemeGroup } from './themeGroups';
+import { groupManager } from './groupManager';
 import { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } from '../lib/themeAPI.js';
-
+const manager = new ThemeGroupManager();
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
 // ============================================================================
