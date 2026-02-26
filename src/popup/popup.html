@@ -9,38 +9,25 @@
 
   <body>
     <div class="popup-container">
-
       <!-- Header -->
       <header class="popup-header">
-        <h1 class="current-group">Current Group Name</h1>
+        <h1 id="currentGroupName" class="current-group">Loading...</h1>
       </header>
 
       <!-- Body -->
       <main class="popup-body">
-        <ul class="theme-list" aria-label="Theme options">
-          <li><button class="theme-item" type="button">Theme Option 1</button></li>
-          <li><button class="theme-item" type="button">Theme Option 2</button></li>
-          <li><button class="theme-item" type="button">Theme Option 3</button></li>
-          <li><button class="theme-item" type="button">Theme Option 4</button></li>
-          <li><button class="theme-item" type="button">Theme Option 5</button></li>
-          <li><button class="theme-item" type="button">Theme Option 6</button></li>
-          <li><button class="theme-item" type="button">Theme Option 7</button></li>
-        </ul>
+        <ul id="themesList" class="theme-list" aria-label="Theme options"></ul>
       </main>
 
       <!-- Footer -->
       <footer class="popup-footer">
-        <button class="manage-btn" type="button">Manage Groups</button>
+        <button id="manageGroupsBtn" class="manage-btn" type="button">
+          Manage Groups
+        </button>
       </footer>
-
     </div>
 
-    <footer class="footer">
-      <small>Theme Group Switcher v0.3</small>
-    </footer>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-
+    <!-- Popup logic -->
+    <script src="popup.js"></script>
+  </body>
 </html>
