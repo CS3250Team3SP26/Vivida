@@ -4,7 +4,7 @@
  * @module background/background
  */
 
-import { groupManager } from './groupManager';
+import { groupManager } from '../lib/groupManager.js';
 import { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } from '../lib/themeAPI.js';
 const manager = new groupManager();
 // ============================================================================
@@ -21,7 +21,7 @@ async function initialize() {
     console.log('[Background] Theme Groups extension initializing...');
 
     try {
-        await manager.initilize();
+        await manager.initialize(); //fixed typo
     }catch (error) {
     console.error('[Background]Error during intilization: ', error);
     }
@@ -81,9 +81,12 @@ const messageHandlers = {
      * @returns {Promise<{success: boolean}>} - Response containing success status
      */
     'DELETE_GROUP': async (message) => {
-        await manager.deleteGroup(message.groupId);
-        await manager.save();
-        return { success: true };
+        const result = await manager.deleteGroup(message.groupId);
+    if (!result) {
+        return { success: false, error: 'Group not found' };
+    }
+    await manager.save();
+    return { success: true };
     },
     //similar to saveGroup
 

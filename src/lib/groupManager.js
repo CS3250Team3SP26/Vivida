@@ -7,8 +7,8 @@
  * @module lib/groupManager
  */
 
-import { ThemeGroup } from './themeGroups';
-import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper';
+import { ThemeGroup } from './themeGroups.js';
+import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper.js';
 
 /**
  * groupManager manages a collection of themegroup instances
@@ -235,6 +235,9 @@ class groupManager {
 
             this.activeGroupId = id;
             return true; // Active group set successfully
+        }
+        setActiveGroupId(id) {
+           return this.setActiveGroup(id);
         }
 
         /**
