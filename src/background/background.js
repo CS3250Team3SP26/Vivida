@@ -1,65 +1,35 @@
 /**
  * @fileoverview Background script for Theme Groups extension
- * Handles message routing and delegates storage operations to StorageServiceWrapper
+ * Handles message routing and delegates to dedicated modules.
  * @module background/background
  */
-import storageServiceWrapper from '../lib/storageServiceWrapper.js';
-// Import the storage service (declared in manifest.json)
-// The service is loaded via script tag, so it's available globally
 
-// ============================================================================
-// SERVICE INITIALIZATION
-// ============================================================================
-
-/**
- * Storage service instance for managing theme group data
- * @type {StorageServiceWrapper}
- */
-const storageService = new storageServiceWrapper();
+import { loadGroups, saveGroups, saveGroup, deleteGroup, loadActiveGroupId, saveActiveGroupId } from '../lib/storageServiceWrapper.js';
+import { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } from '../lib/themeAPI.js';
 
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
 // ============================================================================
 
 /**
- * Get all installed themes using the management API
- * 
- * @returns {Promise<Array>} Array of theme objects from browser.management API
- * 
- * @example
- * const themes = await getInstalledThemes();
- * // Returns: [{ id: "theme1", name: "Dark Theme", type: "theme", ... }]
- */
-async function getInstalledThemes() {
-    try {
-        const allAddons = await browser.management.getAll();
-        const themes = allAddons.filter(addon => addon.type === 'theme');
-        console.log(`[Background] Found ${themes.length} installed themes`);
-        return themes;
-    } catch (error) {
-        console.error('[Background] Error getting installed themes:', error);
-        throw new Error(`Failed to get installed themes: ${error.message}`);
-    }
-}
-
-/**
- * Initialize the extension with default data if needed
- * This runs when the extension is first installed or updated
- * 
+ * Initialize the extension with default data if needed.
+ * Runs when the extension is first installed or updated.
+ *
  * @returns {Promise<void>}
  */
 async function initialize() {
     console.log('[Background] Theme Groups extension initializing...');
-    
+
     try {
-        const existingGroups = await storageService.loadGroups();
-        
-        if (Object.keys(existingGroups).length === 0) {
+        const existingGroups = await loadGroups();
+
+        // loadGroups returns an array — empty array means no groups saved yet
+        if (!existingGroups || existingGroups.length === 0) {
             console.log('[Background] No existing groups found, initializing empty storage...');
-            await storageService.saveGroups({});
+            await saveGroups([]);
             console.log('[Background] Storage initialized');
         } else {
-            console.log('[Background] Found existing groups:', Object.keys(existingGroups));
+            console.log('[Background] Found existing groups:', existingGroups);
         }
     } catch (error) {
         console.error('[Background] Error during initialization:', error);
@@ -71,77 +41,127 @@ async function initialize() {
 // ============================================================================
 
 /**
- * Message handler functions mapped by message type
- * Each handler receives the message and returns a promise that resolves to the response
- * 
+ * Message handler functions mapped by message type.
+ * Each handler receives the message and returns a promise resolving to the response.
+ *
  * @type {Object.<string, function>}
  */
 const messageHandlers = {
+    // -- Storage handlers --
+
     /**
-     * Handle GET_ALL_GROUPS message
-     * @param {Object} message - The message object
-     * @returns {Promise<Object>} Response with groups data
+     * 
+     * @param {Object} _message
+     * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and serialized theme groups data
      */
     'GET_ALL_GROUPS': async (_message) => {
-        const groups = await storageService.loadGroups();
+        const groups = await loadGroups();
         return { success: true, data: groups };
     },
 
     /**
-     * Handle SAVE_GROUP message
-     * @param {Object} message - The message object with groupName and themes properties
-     * @returns {Promise<Object>} Response indicating success
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to save
+     * @param {Array<string>} message.themes - Array of theme extension IDs to associate with the group
+     * @returns {Promise<{success: boolean}>} - Response containing success status
      */
     'SAVE_GROUP': async (message) => {
-        await storageService.saveGroup(message.groupName, message.themes);
+        await saveGroup(message.groupId, message.themes);
         return { success: true };
     },
 
     /**
-     * Handle DELETE_GROUP message
-     * @param {Object} message - The message object with groupName property
-     * @returns {Promise<Object>} Response indicating success
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to delete
+     * @returns {Promise<{success: boolean}>} - Response containing success status
      */
     'DELETE_GROUP': async (message) => {
-        await storageService.deleteGroup(message.groupName);
+        await deleteGroup(message.groupId);
         return { success: true };
     },
 
     /**
-     * Handle GET_ACTIVE_GROUP message
-     * @param {Object} message - The message object
-     * @returns {Promise<Object>} Response with active group ID
+     * 
+     * @param {Object} message 
+     * @param {string} message.groupId - The ID of the group to set as active
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
+    'SET_ACTIVE_GROUP': async (message) => {
+        await saveActiveGroupId(message.groupId);
+        return { success: true };
+    },
+
+    /**
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: string}>} - Response containing success status and active group ID
      */
     'GET_ACTIVE_GROUP': async (_message) => {
-        const activeGroup = await storageService.loadActiveGroupId();
+        const activeGroup = await loadActiveGroupId();
         return { success: true, data: activeGroup };
     },
 
+    // -- Theme API handlers --
+
     /**
-     * Handle SET_ACTIVE_GROUP message
-     * @param {Object} message - The message object with groupName property
-     * @returns {Promise<Object>} Response indicating success
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and array of installed themes
      */
-    'SET_ACTIVE_GROUP': async (message) => {
-        await storageService.saveActiveGroupId(message.groupName);
+    'GET_INSTALLED_THEMES': async (_message) => {
+        const themes = await getThemes();
+        return { success: true, data: themes };
+    },
+
+    /**
+     * 
+     * @param {Object} _message 
+     * @returns {Promise<{success: boolean, data: Object}>} - Response containing success status and current theme information
+     */
+    'GET_CURRENT_THEME': async (_message) => {
+        const theme = await getCurrentTheme();
+        return { success: true, data: theme };
+    },
+
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to enable
+     * @returns {Promise<{success: boolean}>} - Response containing success status
+     */
+    'ENABLE_THEME': async (message) => {
+        await enableTheme(message.themeId);
         return { success: true };
     },
 
     /**
-     * Handle GET_INSTALLED_THEMES message
-     * @param {Object} message - The message object
-     * @returns {Promise<Object>} Response with installed themes data
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to disable
+     * @returns {Promise<{success: boolean}>} - Response containing success status
      */
-    'GET_INSTALLED_THEMES': async (_message) => {
-        const themes = await getInstalledThemes();
-        return { success: true, data: themes };
+    'DISABLE_THEME': async (message) => {
+        await disableTheme(message.themeId);
+        return { success: true };
+    },
+
+    /**
+     * 
+     * @param {Object} message 
+     * @param {string} message.themeId - The ID of the theme to get
+     * @returns {Promise<{success: boolean, data: Object}>} - Response containing success status and theme information
+     */
+    'GET_THEME_BY_ID': async (message) => {
+        const theme = await getThemeById(message.themeId);
+        return { success: true, data: theme };
     }
 };
 
 /**
- * Main message listener that routes messages to appropriate handlers
- * This is the central message dispatcher for the extension
- * 
+ * Main message listener that routes messages to appropriate handlers.
+ *
  * @param {Object} message - Message object with a 'type' property
  * @param {Object} sender - Sender information
  * @param {function} sendResponse - Function to send response back to sender
@@ -149,19 +169,18 @@ const messageHandlers = {
  */
 function handleMessage(message, sender, sendResponse) {
     console.log('[Background] Received message:', message);
-    
+
     const handler = messageHandlers[message.type];
-    
+
     if (!handler) {
         console.warn('[Background] Unknown message type:', message.type);
-        sendResponse({ 
-            success: false, 
-            error: `Unknown message type: ${message.type}` 
+        sendResponse({
+            success: false,
+            error: `Unknown message type: ${message.type}`
         });
         return false;
     }
-    
-    // Execute the handler and send response
+
     handler(message)
         .then(response => {
             console.log('[Background] Sending response:', response);
@@ -169,36 +188,23 @@ function handleMessage(message, sender, sendResponse) {
         })
         .catch(error => {
             console.error('[Background] Handler error:', error);
-            sendResponse({ 
-                success: false, 
-                error: error.message 
+            sendResponse({
+                success: false,
+                error: error.message
             });
         });
-    
-    // Return true to indicate we'll send response asynchronously
+
     return true;
 }
 
 // ============================================================================
-// EVENT LISTENERS
+// EVENT LISTENERS & INITIALIZATION
 // ============================================================================
 
-// Register the message listener
 browser.runtime.onMessage.addListener(handleMessage);
 
-// ============================================================================
-// INITIALIZATION
-// ============================================================================
-
-// Initialize the extension when the background script loads
-initialize();
+await initialize();
 
 console.log('[Background] Theme Groups background script loaded successfully!');
 
-// Keep the background script alive in Firefox
-// This prevents Firefox from unloading it too quickly
-setInterval(() => {
-    // Heartbeat to keep script alive
-}, 10000);
-    // Export for testing (Node.js environment only)
- export{ initialize, getInstalledThemes, handleMessage };
+export { initialize, handleMessage };
