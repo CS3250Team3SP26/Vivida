@@ -4,7 +4,7 @@
  * @module background/background
  */
 
-import { loadGroups, saveGroups, saveGroup, deleteGroup, loadActiveGroupId, saveActiveGroupId } from '../lib/storageServiceWrapper.js';
+import { ThemeGroup } from './themeGroups';
 import { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } from '../lib/themeAPI.js';
 
 // ============================================================================
