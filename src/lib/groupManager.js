@@ -1,25 +1,25 @@
 /**
- * @fileoverview themeGroupManager class that manages the collection of theme 
+ * @fileoverview groupManager class that manages the collection of theme 
  * 
  * This module gives a general manager for creating, retrieveing, 
  * updateing, and deleting theme groups, as well as managing the active groups
  * 
- * @module lib/themeGroupManager
+ * @module lib/groupManager
  */
 
 import { ThemeGroup } from './themeGroups';
 import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper';
 
 /**
- * themeGroupManager manages a collection of themegroup instances
+ * groupManager manages a collection of themegroup instances
  * and provised methods for CRUD operations and also active group managing
  * 
  * @class
  */
 
-class ThemeGroupManager {
+class groupManager {
     /**
-     * Creates a new instance, ThemeGRoupMAnager
+     * Creates a new instance, groupManager
      * @constructor
       */
     constructor() {
@@ -64,22 +64,22 @@ class ThemeGroupManager {
             if (activeID && this.groups.has(activeID)) {
                 this.activeGroupId = activeID;
             }
-            console.log('ThemeGroupManager initialized successfully');
+            console.log('groupManager initialized successfully');
         
             } catch (error) {
-                console.error('Failed to initialize ThemeGroupManager:', error);
+                console.error('Failed to initialize groupManager:', error);
                 throw new Error('Initialization failed:' + error.message);
             }
         }
 
         /**
-         * Saves the currecnt state of manager to storage
+         * Saves the current state of manager to storage
          * 
          * @async
          * @returns {Promise<void>}
          * @throws {Error} - if saving fails
          */
-        async saveToStorage() {
+        async save() {
             try {
                 const serialized = this.toJSON();
                 await saveGroups(serialized);
@@ -87,24 +87,13 @@ class ThemeGroupManager {
                 if (this.activeGroupId){
                     await saveActiveGroupId(this.activeGroupId);
                 }
-                console.log('ThemeGroupManager state saved successfully');
+                console.log('groupManager state saved successfully');
 
             } catch (error) {
-                console.error('Failed to save ThemeGroupManager state:', error);
-                throw new Error('Failed to save ThemeGroupManager state: ' + error.message);
+                console.error('Failed to save groupManager state:', error);
+                throw new Error('Failed to save groupManager state: ' + error.message);
             }
-        }
-
-        /**
-         * Manually saves the current state to the Storage
-         * Call this after making changes to the groups or active group to commit those changes
-         * 
-         * @async
-         * @returns {Promise<void>}
-         * @throws {Error} - if saving fails
-         */
-        async save() {
-            await this.saveToStorage();
+            
         }
 
         /**
@@ -145,6 +134,30 @@ class ThemeGroupManager {
             const newGroup = new ThemeGroup(name, themes);
             this.groups.set(id, newGroup);
             return { id, group: newGroup };
+        }
+
+        /**
+         * Updates the themes of an existing group
+         * @param {string} id - the ID of the group to update.
+         * @param {Array<string>} themes - the new list of themes for the group.
+         * @returns {boolean} True if the group was updated, False if the group was not found.
+         * @throws {TypeError} if id is not a string, or themes is not an array.
+         */
+        updateGroupThemes(id, themes) { 
+            if (typeof id !== 'string') {
+                throw new TypeError('Group ID must be a string');
+            }
+            if (!Array.isArray(themes)) {
+                throw new TypeError('Themes must be an array');
+            }
+
+            const group = this.groups.get(id);
+            if (!group) {
+                return false;
+            }
+
+            group.themes = [...themes];
+            return true;
         }
 
         /**
@@ -368,4 +381,4 @@ class ThemeGroupManager {
         
     }
     
-export { ThemeGroupManager };
+export { groupManager };

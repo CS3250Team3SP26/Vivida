@@ -1,12 +1,12 @@
 /**
- * @fileoverview Unit tests for ThemeGroupManager
+ * @fileoverview Unit tests for groupManager
  * 
- * Test file location: test/unit/themeGroupManager.test.js
+ * Test file location: test/unit/groupManager.test.js
  * 
- * This test suite provides comprehensive coverage of the ThemeGroupManager
+ * This test suite provides comprehensive coverage of the groupManager
  * class, testing all public methods, error handling, and edge cases.
  * 
- * @module tests/themeGroupManager.test
+ * @module tests/groupManager.test
  */
 import { jest } from '@jest/globals';
 
@@ -20,17 +20,17 @@ jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
 }));
 
 // Dynamic imports must come AFTER unstable_mockModule calls
-const { ThemeGroupManager } = await import('../../src/lib/themeGroupManager');
+const { groupManager } = await import('../../src/lib/GroupManager');
 const { ThemeGroup } = await import('../../src/lib/themeGroups');
 const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
     await import('../../src/lib/storageServiceWrapper');
 
-describe('ThemeGroupManager', () => {
+describe('groupManager', () => {
     let manager;
     let consoleSpy;
 
     beforeEach(() => {
-        manager = new ThemeGroupManager();
+        manager = new groupManager();
         jest.clearAllMocks();
         consoleSpy = {
             log: jest.spyOn(console, 'log').mockImplementation(() => {}),
@@ -45,7 +45,7 @@ describe('ThemeGroupManager', () => {
 
     describe('constructor', () => {
         test('should create a new instance with empty groups', () => {
-            expect(manager).toBeInstanceOf(ThemeGroupManager);
+            expect(manager).toBeInstanceOf(groupManager);
             expect(manager.groupCount()).toBe(0);
             expect(manager.getActiveGroup()).toBeNull();
         });
@@ -146,6 +146,38 @@ describe('ThemeGroupManager', () => {
             expect(() => manager.createGroup('Duplicate')).toThrow(/already exists/);
         });
     });
+
+    describe('updateGroupThemes', () => {
+    it('updates themes on an existing group and returns true', () => {
+        const { id } = manager.createGroup('Test Group');
+        const result = manager.updateGroupThemes(id, ['theme1', 'theme2']);
+        expect(result).toBe(true);
+        expect(manager.getGroup(id).themes).toEqual(['theme1', 'theme2']);
+    });
+
+    it('returns false for a non-existent ID', () => {
+        const result = manager.updateGroupThemes('non-existent-id', ['theme1']);
+        expect(result).toBe(false);
+    });
+
+    it('throws TypeError if id is not a string', () => {
+        expect(() => manager.updateGroupThemes(123, ['theme1'])).toThrow(TypeError);
+    });
+
+    it('throws TypeError if themes is not an array', () => {
+        const { id } = manager.createGroup('Test Group');
+        expect(() => manager.updateGroupThemes(id, 'not-an-array')).toThrow(TypeError);
+    });
+
+    it('does not mutate the original themes array', () => {
+        const { id } = manager.createGroup('Test Group');
+        const themes = ['theme1', 'theme2'];
+        manager.updateGroupThemes(id, themes);
+        themes.push('theme3');
+        expect(manager.getGroup(id).themes).toEqual(['theme1', 'theme2']);
+    });
+});
+
 
     describe('deleteGroup', () => {
         test('should delete an existing group', () => {
@@ -366,7 +398,7 @@ describe('ThemeGroupManager', () => {
             saveGroups.mockRejectedValueOnce(new Error('Storage error'));
             manager.createGroup('Test Group');
 
-            await expect(manager.save()).rejects.toThrow('Failed to save ThemeGroupManager state');
+            await expect(manager.save()).rejects.toThrow('Failed to save groupManager state');
         });
     });
 
@@ -622,7 +654,7 @@ describe('ThemeGroupManager', () => {
             const serialized = manager.toJSON();
 
             // Create new manager and restore
-            const newManager = new ThemeGroupManager();
+            const newManager = new groupManager();
             newManager.fromJSON(serialized);
 
             // Verify restoration
