@@ -1,0 +1,66 @@
+/* General Page Styling */
+body {
+    font-family: sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+header {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+}
+
+/* Section Containers */
+section {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: #df0000; /* Firefox-style blue */
+}
+
+/* Management Controls styling */
+#management-controls {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 8px 16px;
+    cursor: pointer;
+    background-color: #196b1f;
+    color: rgb(255, 255, 255);
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #196b1f;
+}
+
+/* Theme List Layouts */
+.theme-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    min-height: 50px;
+}
+
+/* Individual Theme Items (for future use when JS populates them) */
+.theme-item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    background: #fafafa;
+}
