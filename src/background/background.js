@@ -6,7 +6,7 @@
 
 import { groupManager } from './groupManager';
 import { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } from '../lib/themeAPI.js';
-const manager = new ThemeGroupManager();
+const manager = new groupManager();
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
 // ============================================================================
@@ -21,19 +21,11 @@ async function initialize() {
     console.log('[Background] Theme Groups extension initializing...');
 
     try {
-        const existingGroups = await loadGroups();
-
-        // loadGroups returns an array — empty array means no groups saved yet
-        if (!existingGroups || existingGroups.length === 0) {
-            console.log('[Background] No existing groups found, initializing empty storage...');
-            await saveGroups([]);
-            console.log('[Background] Storage initialized');
-        } else {
-            console.log('[Background] Found existing groups:', existingGroups);
-        }
-    } catch (error) {
-        console.error('[Background] Error during initialization:', error);
+        await manager.initilize();
+    }catch (error) {
+    console.error('[Background]Error during intilization: ', error);
     }
+
 }
 
 // ============================================================================
@@ -44,7 +36,7 @@ async function initialize() {
  * Message handler functions mapped by message type.
  * Each handler receives the message and returns a promise resolving to the response.
  *
- * @type {Object.<string, function>}
+ * @type {Object.<string, Function>}
  */
 const messageHandlers = {
     // -- Storage handlers --
@@ -55,22 +47,33 @@ const messageHandlers = {
      * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and serialized theme groups data
      */
     'GET_ALL_GROUPS': async (_message) => {
-        const groups = await loadGroups();
-        return { success: true, data: groups };
-    },
+        const groups = await manager.getAllGroups();
+        const serialized = groups.map(({id, group}) => ( {
+            id,
+            name: group.name,
+            themes: [...group.themes]
 
+        }));
+        return { success: true, data: serialized };
+    },
+   //Searlization happens in manager.getAllGroups so we just return the results.
     /**
      * 
      * @param {Object} message 
-     * @param {string} message.groupId - The ID of the group to save
+    * @param {string} message.groupId - The ID of the group to save
      * @param {Array<string>} message.themes - Array of theme extension IDs to associate with the group
-     * @returns {Promise<{success: boolean}>} - Response containing success status
+     * @returns {Promise<{success: boolean, error?: string}>} - Response containing success status
      */
     'SAVE_GROUP': async (message) => {
-        await saveGroup(message.groupId, message.themes);
+        const result = await manager.updateGroupThemes(message.groupId, message.themes);
+        if (!result) {
+            return { success: false, error: 'Group not found' };
+        }
+        await manager.save();
         return { success: true };
     },
-
+    //await manager.Save(): will write to storage asynchronously
+//
     /**
      * 
      * @param {Object} message 
@@ -78,9 +81,11 @@ const messageHandlers = {
      * @returns {Promise<{success: boolean}>} - Response containing success status
      */
     'DELETE_GROUP': async (message) => {
-        await deleteGroup(message.groupId);
+        await manager.deleteGroup(message.groupId);
+        await manager.save();
         return { success: true };
     },
+    //similar to saveGroup
 
     /**
      * 
@@ -89,9 +94,11 @@ const messageHandlers = {
      * @returns {Promise<{success: boolean}>} - Response containing success status
      */
     'SET_ACTIVE_GROUP': async (message) => {
-        await saveActiveGroupId(message.groupId);
+        await manager.setActiveGroupId(message.groupId);
+        await manager.save();
         return { success: true };
     },
+    //similar to saveGroup
 
     /**
      * 
@@ -99,8 +106,8 @@ const messageHandlers = {
      * @returns {Promise<{success: boolean, data: string}>} - Response containing success status and active group ID
      */
     'GET_ACTIVE_GROUP': async (_message) => {
-        const activeGroup = await loadActiveGroupId();
-        return { success: true, data: activeGroup };
+        const activeGroup = await manager.getActiveGroup();
+        return { success: true, data: activeGroup ? activeGroup.id : null };
     },
 
     // -- Theme API handlers --
