@@ -4,7 +4,7 @@
  * @module background/background
  */
 
-import { groupManager } from "../lib/groupManager.js";
+import { groupManager } from "../lib/GroupManager.js";
 import {
   getThemes,
   getCurrentTheme,

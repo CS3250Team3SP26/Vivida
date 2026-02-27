@@ -20,7 +20,7 @@ jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
 }));
 
 // Dynamic imports must come AFTER unstable_mockModule calls
-const { groupManager } = await import('../../src/lib/groupManager');
+const { groupManager } = await import('../../src/lib/GroupManager');
 const { ThemeGroup } = await import('../../src/lib/themeGroups');
 const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
     await import('../../src/lib/storageServiceWrapper');
