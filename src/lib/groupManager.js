@@ -1,25 +1,25 @@
 /**
- * @fileoverview groupManager class that manages the collection of theme 
+ * @fileoverview GroupManager class that manages the collection of theme 
  * 
  * This module gives a general manager for creating, retrieveing, 
  * updateing, and deleting theme groups, as well as managing the active groups
  * 
- * @module lib/groupManager
+ * @module lib/GroupManager
  */
 
 import { Group } from './Group.js';
 import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper.js';
 
 /**
- * groupManager manages a collection of Group instances
+ * GroupManager manages a collection of Group instances
  * and provised methods for CRUD operations and also active group managing
  * 
  * @class
  */
 
-class groupManager {
+class GroupManager {
     /**
-     * Creates a new instance, groupManager
+     * Creates a new instance, GroupManager
      * @constructor
       */
     constructor() {
@@ -64,10 +64,10 @@ class groupManager {
                 if (activeID && this.groups.has(activeID)) {
                     this.activeGroupId = activeID;
                 }
-                console.log('groupManager initialized successfully');
+                console.log('GroupManager initialized successfully');
         
             } catch (error) {
-                console.error('Failed to initialize groupManager:', error);
+                console.error('Failed to initialize GroupManager:', error);
                 throw new Error('Initialization failed:' + error.message);
             }
         }
@@ -87,11 +87,11 @@ class groupManager {
                 if (this.activeGroupId){
                     await saveActiveGroupId(this.activeGroupId);
                 }
-                console.log('groupManager state saved successfully');
+                console.log('GroupManager state saved successfully');
 
             } catch (error) {
-                console.error('Failed to save groupManager state:', error);
-                throw new Error('Failed to save groupManager state: ' + error.message);
+                console.error('Failed to save GroupManager state:', error);
+                throw new Error('Failed to save GroupManager state: ' + error.message);
             }
             
         }
@@ -386,4 +386,4 @@ class groupManager {
         
     }
     
-export { groupManager };
+export { GroupManager };

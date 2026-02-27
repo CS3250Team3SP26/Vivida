@@ -4,7 +4,7 @@
  * @module background/background
  */
 
-import { groupManager } from "../lib/GroupManager.js";
+import { GroupManager } from "../lib/GroupManager.js";
 import {
   getThemes,
   getCurrentTheme,
@@ -12,7 +12,7 @@ import {
   disableTheme,
   getThemeById,
 } from "../lib/themeAPI.js";
-const manager = new groupManager();
+const manager = new GroupManager();
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
 // ============================================================================

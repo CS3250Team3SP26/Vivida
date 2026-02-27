@@ -1,12 +1,12 @@
 /**
- * @fileoverview Unit tests for groupManager
+ * @fileoverview Unit tests for GroupManager
  * 
- * Test file location: test/unit/groupManager.test.js
+ * Test file location: test/unit/GroupManager.test.js
  * 
- * This test suite provides comprehensive coverage of the groupManager
+ * This test suite provides comprehensive coverage of the GroupManager
  * class, testing all public methods, error handling, and edge cases.
  * 
- * @module tests/groupManager.test
+ * @module tests/GroupManager.test
  */
 import { it, jest } from '@jest/globals';
 
@@ -20,17 +20,17 @@ jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
 }));
 
 // Dynamic imports must come AFTER unstable_mockModule calls
-const { groupManager } = await import('../../src/lib/GroupManager');
+const { GroupManager } = await import('../../src/lib/GroupManager');
 const { Group } = await import('../../src/lib/Group');
 const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
     await import('../../src/lib/storageServiceWrapper');
 
-describe('groupManager', () => {
+describe('GroupManager', () => {
     let manager;
     let consoleSpy;
 
     beforeEach(() => {
-        manager = new groupManager();
+        manager = new GroupManager();
         jest.clearAllMocks();
         consoleSpy = {
             log: jest.spyOn(console, 'log').mockImplementation(() => {}),
@@ -45,7 +45,7 @@ describe('groupManager', () => {
 
     describe('constructor', () => {
         test('should create a new instance with empty groups', () => {
-            expect(manager).toBeInstanceOf(groupManager);
+            expect(manager).toBeInstanceOf(GroupManager);
             expect(manager.groupCount()).toBe(0);
             expect(manager.getActiveGroup()).toBeNull();
         });
@@ -408,7 +408,7 @@ describe('groupManager', () => {
             saveGroups.mockRejectedValueOnce(new Error('Storage error'));
             manager.createGroup('Test Group');
 
-            await expect(manager.save()).rejects.toThrow('Failed to save groupManager state');
+            await expect(manager.save()).rejects.toThrow('Failed to save GroupManager state');
         });
     });
 
@@ -664,7 +664,7 @@ describe('groupManager', () => {
             const serialized = manager.toJSON();
 
             // Create new manager and restore
-            const newManager = new groupManager();
+            const newManager = new GroupManager();
             newManager.fromJSON(serialized);
 
             // Verify restoration

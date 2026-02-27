@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-// Mock groupManager named exports
+// Mock GroupManager named exports
 const mockManager = {
     initialize: jest.fn(),
     getAllGroups: jest.fn(),
@@ -10,8 +10,8 @@ const mockManager = {
     getActiveGroup: jest.fn(),
     save: jest.fn(),
 };
-jest.unstable_mockModule('../../src/lib/groupManager.js', () => ({
-    groupManager: jest.fn().mockImplementation(()=> mockManager)
+jest.unstable_mockModule('../../src/lib/GroupManager.js', () => ({
+    GroupManager: jest.fn().mockImplementation(()=> mockManager)
 }));
 
 // Mock themeAPI named exports
