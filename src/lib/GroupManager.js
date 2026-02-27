@@ -209,7 +209,7 @@ class GroupManager {
         /**
          * Retirns all theme groups
          * 
-         * @return {Array[Object]} - An array of objects containing group IDs and their corresponding Group instances
+         * @return {Array<Object>} - An array of objects containing group IDs and their corresponding Group instances
          * @returns {string} return[].id - the unique ID of the group
          * @returns {Group} return[].group - The Group instance
          */

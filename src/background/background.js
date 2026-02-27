@@ -66,7 +66,7 @@ const messageHandlers = {
    * @param {Object} message
    * @param {string} message.groupId - The ID of the group to save
    * @param {Array<string>} message.themes - Array of theme extension IDs to associate with the group
-   * @returns {Promise<{success: boolean, error?: string}>} - Response containing success status
+   * @returns {Promise<{success: boolean, error: string}>} - Response containing success status
    */
   SAVE_GROUP: async (message) => {
     const result = manager.updateGroupThemes(
