@@ -224,7 +224,7 @@ class groupManager {
          * @returns {boolean} - true if the active group was set, false if group not fiudn
          * @throws {TypeError} - if id is not a string
          */
-        setActiveGroup(id) {
+        setActiveGroupId(id) {
             if (typeof id !== 'string') {
                 throw new TypeError('Group ID must be a string');
             }
@@ -235,9 +235,6 @@ class groupManager {
 
             this.activeGroupId = id;
             return true; // Active group set successfully
-        }
-        setActiveGroupId(id) {
-           return this.setActiveGroup(id);
         }
 
         /**

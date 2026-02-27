@@ -20,7 +20,7 @@ jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
 }));
 
 // Dynamic imports must come AFTER unstable_mockModule calls
-const { groupManager } = await import('../../src/lib/GroupManager');
+const { groupManager } = await import('../../src/lib/groupManager');
 const { ThemeGroup } = await import('../../src/lib/themeGroups');
 const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
     await import('../../src/lib/storageServiceWrapper');
@@ -198,7 +198,7 @@ describe('groupManager', () => {
 
         test('should clear active group if deleted', () => {
             const { id } = manager.createGroup('Active Group');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
 
             manager.deleteGroup(id);
 
@@ -208,7 +208,7 @@ describe('groupManager', () => {
         test('should not affect active group if different group deleted', () => {
             const { id: id1 } = manager.createGroup('Active Group');
             const { id: id2 } = manager.createGroup('Other Group');
-            manager.setActiveGroup(id1);
+            manager.setActiveGroupId(id1);
 
             manager.deleteGroup(id2);
 
@@ -286,18 +286,18 @@ describe('groupManager', () => {
         });
     });
 
-    describe('setActiveGroup', () => {
+    describe('setActiveGroupId', () => {
         test('should set active group with valid ID', () => {
             const { id } = manager.createGroup('Test Group');
 
-            const result = manager.setActiveGroup(id);
+            const result = manager.setActiveGroupId(id);
 
             expect(result).toBe(true);
             expect(manager.getActiveGroup().id).toBe(id);
         });
 
         test('should return false for non-existent group', () => {
-            const result = manager.setActiveGroup('non_existent_id');
+            const result = manager.setActiveGroupId('non_existent_id');
 
             expect(result).toBe(false);
             expect(manager.getActiveGroup()).toBeNull();
@@ -307,16 +307,16 @@ describe('groupManager', () => {
             const { id: id1 } = manager.createGroup('Group 1');
             const { id: id2 } = manager.createGroup('Group 2');
 
-            manager.setActiveGroup(id1);
+            manager.setActiveGroupId(id1);
             expect(manager.getActiveGroup().id).toBe(id1);
 
-            manager.setActiveGroup(id2);
+            manager.setActiveGroupId(id2);
             expect(manager.getActiveGroup().id).toBe(id2);
         });
 
         test('should throw TypeError for non-string ID', () => {
-            expect(() => manager.setActiveGroup(123)).toThrow(TypeError);
-            expect(() => manager.setActiveGroup(null)).toThrow(TypeError);
+            expect(() => manager.setActiveGroupId(123)).toThrow(TypeError);
+            expect(() => manager.setActiveGroupId(null)).toThrow(TypeError);
         });
     });
 
@@ -329,7 +329,7 @@ describe('groupManager', () => {
 
         test('should return active group with ID and instance', () => {
             const { id, group } = manager.createGroup('Active Group');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
 
             const result = manager.getActiveGroup();
 
@@ -340,7 +340,7 @@ describe('groupManager', () => {
 
         test('should return null if active group was deleted', () => {
             const { id } = manager.createGroup('Test Group');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
             manager.deleteGroup(id);
 
             const result = manager.getActiveGroup();
@@ -352,7 +352,7 @@ describe('groupManager', () => {
     describe('clearActiveGroup', () => {
         test('should clear the active group', () => {
             const { id } = manager.createGroup('Test Group');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
 
             manager.clearActiveGroup();
 
@@ -377,7 +377,7 @@ describe('groupManager', () => {
 
         test('should save active group ID to storage', async () => {
             const { id } = manager.createGroup('Test Group');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
 
             await manager.save();
 
@@ -491,7 +491,7 @@ describe('groupManager', () => {
 
         test('should reset active group when restoring', () => {
             const { id } = manager.createGroup('Active');
-            manager.setActiveGroup(id);
+            manager.setActiveGroupId(id);
 
             const data = [
                 { id: 'group_1', name: 'New Group', themes: [] }
@@ -620,7 +620,7 @@ describe('groupManager', () => {
             const { id: id2 } = manager.createGroup('Personal', ['casual', 'fun']);
 
             // Set active group
-            manager.setActiveGroup(id1);
+            manager.setActiveGroupId(id1);
             expect(manager.getActiveGroup().group.name).toBe('Work');
 
             // Get all groups
@@ -632,7 +632,7 @@ describe('groupManager', () => {
             expect(group1.themeCount()).toBe(3);
 
             // Change active group
-            manager.setActiveGroup(id2);
+            manager.setActiveGroupId(id2);
             expect(manager.getActiveGroup().group.name).toBe('Personal');
 
             // Delete a group
@@ -648,7 +648,7 @@ describe('groupManager', () => {
             // Create initial state
             const { id: workId } = manager.createGroup('Work', ['theme1']);
             const { id: personalId } = manager.createGroup('Personal', ['theme2']);
-            manager.setActiveGroup(workId);
+            manager.setActiveGroupId(workId);
 
             // Export state
             const serialized = manager.toJSON();
@@ -708,7 +708,7 @@ describe('groupManager', () => {
             }
 
             for (const id of ids) {
-                manager.setActiveGroup(id);
+                manager.setActiveGroupId(id);
                 expect(manager.getActiveGroup().id).toBe(id);
             }
 
