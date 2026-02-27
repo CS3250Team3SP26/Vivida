@@ -69,7 +69,7 @@ const messageHandlers = {
    * @returns {Promise<{success: boolean, error?: string}>} - Response containing success status
    */
   SAVE_GROUP: async (message) => {
-    const result = await manager.updateGroupThemes(
+    const result = manager.updateGroupThemes(
       message.groupId,
       message.themes,
     );

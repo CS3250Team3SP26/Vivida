@@ -162,7 +162,7 @@ it('SET_ACTIVE_GROUP should return error when group not found', async () => {
 
 it('SAVE_GROUP should update themes and save', async () => {
     const sendResponse = jest.fn();
-    mockManager.updateGroupThemes.mockResolvedValue(true);
+    mockManager.updateGroupThemes.mockReturnValue(true);
     mockManager.save.mockResolvedValue(undefined);
     handleMessage({ type: 'SAVE_GROUP', groupId: 'id-123', themes: ['t1'] }, {}, sendResponse);
     await flushPromises();
@@ -173,7 +173,7 @@ it('SAVE_GROUP should update themes and save', async () => {
 
 it('SAVE_GROUP should return error when group not found', async () => {
     const sendResponse = jest.fn();
-    mockManager.updateGroupThemes.mockResolvedValue(false);
+    mockManager.updateGroupThemes.mockReturnValue(false);
     handleMessage({ type: 'SAVE_GROUP', groupId: 'id-123', themes: ['t1'] }, {}, sendResponse);
     await flushPromises();
     expect(mockManager.save).not.toHaveBeenCalled();
