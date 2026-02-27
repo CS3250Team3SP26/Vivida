@@ -58,13 +58,13 @@ class groupManager {
                 const serializedData = await loadGroups();
                 if (serializedData && serializedData.length > 0) {
                     this.fromJSON(serializedData);
-            }
+                }
 
-            const activeID = await loadActiveGroupId();
-            if (activeID && this.groups.has(activeID)) {
-                this.activeGroupId = activeID;
-            }
-            console.log('groupManager initialized successfully');
+                const activeID = await loadActiveGroupId();
+                if (activeID && this.groups.has(activeID)) {
+                    this.activeGroupId = activeID;
+                }
+                console.log('groupManager initialized successfully');
         
             } catch (error) {
                 console.error('Failed to initialize groupManager:', error);
@@ -150,12 +150,17 @@ class groupManager {
             if (!Array.isArray(themes)) {
                 throw new TypeError('Themes must be an array');
             }
+            if (themes.some(theme => typeof theme !== 'string')) {
+                throw new TypeError('All themes must be strings');
+            }
+            if (themes.some(theme => theme.trim() === '')) {
+                throw new TypeError('Theme IDs cannot be empty strings');
+            }
 
             const group = this.groups.get(id);
             if (!group) {
                 return false;
             }
-
             group.themes = [...themes];
             return true;
         }

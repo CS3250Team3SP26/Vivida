@@ -8,7 +8,7 @@
  * 
  * @module tests/groupManager.test
  */
-import { jest } from '@jest/globals';
+import { it, jest } from '@jest/globals';
 
 // In ESM mode, jest.mock() is not available.
 // jest.unstable_mockModule() must be called BEFORE dynamic imports.
@@ -167,6 +167,16 @@ describe('groupManager', () => {
     it('throws TypeError if themes is not an array', () => {
         const { id } = manager.createGroup('Test Group');
         expect(() => manager.updateGroupThemes(id, 'not-an-array')).toThrow(TypeError);
+    });
+
+    it('throws TypeError if themes array contains non-string', () => {
+        const { id } = manager.createGroup('Test Group');
+        expect(() => manager.updateGroupThemes(id, ['theme1', 123])).toThrow(TypeError);
+    });
+
+    it('throws TypeError if themes array contains empty string', () => {
+        const { id } = manager.createGroup('Test Group');
+        expect(() => manager.updateGroupThemes(id, ['theme1', ''])).toThrow(TypeError);
     });
 
     it('does not mutate the original themes array', () => {
