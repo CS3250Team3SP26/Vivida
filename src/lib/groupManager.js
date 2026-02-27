@@ -334,7 +334,7 @@ class GroupManager {
                 // Extract the numeric part of the ID to keep the unique ID
                 const match = item.id.match(/group_\d+_(\d+)/);
                 if (match) {
-                    const counterValue = parseInt(match[1], 10);
+                    const counterValue = Number.parseInt(match[1], 10);
                     if (counterValue >= maxCounter) {
                         maxCounter = counterValue;
                     }
