@@ -7,11 +7,11 @@
  * @module lib/groupManager
  */
 
-import { ThemeGroup } from './themeGroups.js';
+import { Group } from './Group.js';
 import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper.js';
 
 /**
- * groupManager manages a collection of themegroup instances
+ * groupManager manages a collection of Group instances
  * and provised methods for CRUD operations and also active group managing
  * 
  * @class
@@ -24,8 +24,8 @@ class groupManager {
       */
     constructor() {
         /**
-         * Map of unique group ids to ThemeGroup instances
-         * @type {Map<string, ThemeGroup>}
+         * Map of unique group ids to Group instances
+         * @type {Map<string, Group>}
          * 
          */
         this.groups = new Map();
@@ -111,9 +111,9 @@ class groupManager {
          * 
          * @param {string} name - The name of the new group
          * @param (Array<string>} [themes[]] - optional initial themes for group
-         * @returns {object} - an object containing the group ID and the ThemeGroup instance
+         * @returns {object} - an object containing the group ID and the Group instance
          * @returns {string} return.id - the unique ID of the new group
-         * @returns {ThemeGroup} return.group - the created ThemeGroup instance
+         * @returns {Group} return.group - the created Group instance
          * @throws {TypeError} - if name is not valid string
          * @throws {Error} - if group with same name already exists
          * 
@@ -131,7 +131,7 @@ class groupManager {
             }
 
             const id = this.generateID();
-            const newGroup = new ThemeGroup(name, themes);
+            const newGroup = new Group(name, themes);
             this.groups.set(id, newGroup);
             return { id, group: newGroup };
         }
@@ -195,7 +195,7 @@ class groupManager {
          * Retrieves a theme group by ID
          * 
          * @param {string} id - The ID of the group to retrieve
-         * @returns {ThemeGroup|null} - the ThemeGroup instance, or null if not found
+         * @returns {Group|null} - the Group instance, or null if not found
          * @throws {TypeError} - if id is not a string
          */
         getGroup(id) {
@@ -209,9 +209,9 @@ class groupManager {
         /**
          * Retirns all theme groups
          * 
-         * @return {Array[Object]} - An array of objects containing group IDs and their corresponding ThemeGroup instances
+         * @return {Array[Object]} - An array of objects containing group IDs and their corresponding Group instances
          * @returns {string} return[].id - the unique ID of the group
-         * @returns {ThemeGroup} return[].group - The ThemeGroup instance
+         * @returns {Group} return[].group - The Group instance
          */
 
         getAllGroups() {
@@ -247,7 +247,7 @@ class groupManager {
          * 
          * @returns {object|null} Object that contains the active group ID and instance, null if there isnt any active
          * @returns {string} return.id - the active group ID
-         * @returns {ThemeGroup} return.group - the actiev ThemeGroup instance
+         * @returns {Group} return.group - the actiev Group instance
          */
         getActiveGroup() {
             if (!this.activeGroupId || !this.groups.has(this.activeGroupId)) {
@@ -340,7 +340,7 @@ class groupManager {
                     }
                 }
 
-                const group = new ThemeGroup(item.name, item.themes);
+                const group = new Group(item.name, item.themes);
                 this.groups.set(item.id, group);
             }
 

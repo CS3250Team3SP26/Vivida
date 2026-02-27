@@ -21,7 +21,7 @@ jest.unstable_mockModule('../../src/lib/storageServiceWrapper', () => ({
 
 // Dynamic imports must come AFTER unstable_mockModule calls
 const { groupManager } = await import('../../src/lib/GroupManager');
-const { ThemeGroup } = await import('../../src/lib/themeGroups');
+const { Group } = await import('../../src/lib/Group');
 const { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } =
     await import('../../src/lib/storageServiceWrapper');
 
@@ -108,7 +108,7 @@ describe('groupManager', () => {
 
             expect(result).toHaveProperty('id');
             expect(result).toHaveProperty('group');
-            expect(result.group).toBeInstanceOf(ThemeGroup);
+            expect(result.group).toBeInstanceOf(Group);
             expect(result.group.name).toBe('Work Themes');
             expect(manager.groupCount()).toBe(1);
         });

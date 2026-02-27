@@ -3,7 +3,7 @@
  * 
  * This module defines the structure for managing theme groups,
  * including creation, retrieval, and manipulation of theme groups.
- * @module lib/themeGroups
+ * @module lib/Groups
  */
 
 /**
@@ -12,7 +12,7 @@
  * 
  * @class
  */
-class ThemeGroup {
+class Group {
     /**
      * create new theme group instanxe
      * @param {string} name - display name for the group
@@ -99,6 +99,6 @@ class ThemeGroup {
     }
 
  
-}// ThemeGroup
+}// Group
 
-export { ThemeGroup };
+export { Group };
