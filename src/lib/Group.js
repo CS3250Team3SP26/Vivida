@@ -3,7 +3,7 @@
  * 
  * This module defines the structure for managing theme groups,
  * including creation, retrieval, and manipulation of theme groups.
- * @module lib/themeGroups
+ * @module lib/Groups
  */
 
 /**
@@ -12,7 +12,7 @@
  * 
  * @class
  */
-class ThemeGroup {
+class Group {
     /**
      * create new theme group instanxe
      * @param {string} name - display name for the group
@@ -29,7 +29,6 @@ class ThemeGroup {
         }
         this.name = name;
         this.themes = [...themes];
-        this.id = 'group-' + Date.now() + '-' + Math.floor(Math.random() * 1000); // Generate a unique ID for the group
     }// constructor
 
     /**
@@ -100,7 +99,6 @@ class ThemeGroup {
     }
 
  
-}// ThemeGroup
+}// Group
 
-// Export for use in other modules
-export { ThemeGroup };
+export { Group };
