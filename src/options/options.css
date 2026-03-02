@@ -31,7 +31,7 @@ h2 {
 /* Management Controls styling */
 #management-controls {
     display: flex;
-    gap: 10px;
+    gap: 50px;
 }
 
 button {
