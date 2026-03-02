@@ -12,7 +12,7 @@
 
 /**
  * Firefox WebExtension API reference.
- * @type {typeof browser}
+ * @type {browser}
  */
 const ext = browser;
 
