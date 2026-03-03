@@ -199,3 +199,6 @@ async function loadPopup() {
  * Initialize popup once DOM is ready.
  */
 document.addEventListener("DOMContentLoaded", loadPopup);
+document.getElementById("manageGroupsBtn").addEventListener("click", () => {
+  browser.runtime.openOptionsPage();
+});
