@@ -183,7 +183,7 @@ async function loadPopup() {
     setGroupName(displayName);
 
     renderThemes({
-      themeIds: activeGroup.themeIds || [],
+      themeIds: activeGroup.themes || [],
       installedThemes,
       activeThemeId
     });
