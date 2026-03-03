@@ -93,7 +93,7 @@ function renderEmpty(message) {
  * @param {Object[]} params.installedThemes - All installed themes.
  * @param {string|null} params.activeThemeId - Currently active theme ID.
  */
-function renderThemes({ themeIds, installedThemes, activeThemeId }) {
+export function renderThemes({ themeIds, installedThemes, activeThemeId }) {
   if (!themesListEl) return;
 
   clearThemes();
@@ -123,6 +123,28 @@ function renderThemes({ themeIds, installedThemes, activeThemeId }) {
       button.classList.add("is-selected");
       button.setAttribute("aria-current", "true");
     }
+
+    /**
+     * Handles a click on a theme button. Sends an ENABLE_THEME message to the
+     * background script. On success, removes "is-selected" and aria-current
+     * from the previously active button and applies them to the clicked button.
+     * On failure, logs the error to the console.
+     *
+     * @returns {Promise<void>}
+     */
+    button.addEventListener("click", async () => {
+      try {
+        await sendMessage({ type: "ENABLE_THEME", themeId });
+        themesListEl.querySelectorAll(".is-selected").forEach((btn) => {
+          btn.classList.remove("is-selected");
+          btn.removeAttribute("aria-current");
+        });
+        button.classList.add("is-selected");
+        button.setAttribute("aria-current", "true");
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
     li.appendChild(button);
     themesListEl.appendChild(li);
