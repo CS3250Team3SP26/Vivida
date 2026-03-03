@@ -219,7 +219,7 @@ function handleMessage(message, sender, sendResponse) {
  *
  * @param {Object} details - Details about the installation event
  */
-browser.runtime.onInstalled.addListener((details) => {
+browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     const DEFAULT_THEME_IDS = [
       "default-theme@mozilla.org",
@@ -229,7 +229,7 @@ browser.runtime.onInstalled.addListener((details) => {
     ];
     const defaultGroup = manager.createGroup("Default Group", DEFAULT_THEME_IDS);
     manager.setActiveGroupId(defaultGroup.id);
-    manager.save();
+    await manager.save();
   }
 });
 
