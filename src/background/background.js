@@ -69,18 +69,14 @@ const messageHandlers = {
    * @returns {Promise<{success: boolean, error: string}>} - Response containing success status
    */
   SAVE_GROUP: async (message) => {
-    const result = manager.updateGroupThemes(
-      message.groupId,
-      message.themes,
-    );
+    const result = manager.updateGroupThemes(message.groupId, message.themes);
     if (!result) {
       return { success: false, error: "Group not found" };
     }
     await manager.save();
     return { success: true };
   },
-  //await manager.Save(): will write to storage asynchronously
-  //
+
   /**
    *
    * @param {Object} message
@@ -95,7 +91,6 @@ const messageHandlers = {
     await manager.save();
     return { success: true };
   },
-  //similar to saveGroup
 
   /**
    *
@@ -109,7 +104,6 @@ const messageHandlers = {
     await manager.save();
     return { success: true };
   },
-  //similar to saveGroup
 
   /**
    *
@@ -218,6 +212,26 @@ function handleMessage(message, sender, sendResponse) {
 // ============================================================================
 // EVENT LISTENERS & INITIALIZATION
 // ============================================================================
+
+/**
+ * Listens for extension installation events to set up default theme groups.
+ * Creates a default group with common themes and sets it as active.
+ *
+ * @param {Object} details - Details about the installation event
+ */
+browser.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    const DEFAULT_THEME_IDS = [
+      "default-theme@mozilla.org",
+      "firefox-compact-light@mozilla.org",
+      "firefox-compact-dark@mozilla.org",
+      "firefox-alpenglow@mozilla.org",
+    ];
+    const defaultGroup = manager.createGroup("Default Group", DEFAULT_THEME_IDS);
+    manager.setActiveGroupId(defaultGroup.id);
+    manager.save();
+  }
+});
 
 browser.runtime.onMessage.addListener(handleMessage);
 

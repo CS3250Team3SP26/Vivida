@@ -3,6 +3,7 @@ import { jest } from '@jest/globals';
 // Mock GroupManager named exports
 const mockManager = {
     initialize: jest.fn(),
+    createGroup: jest.fn(),       // <-- this was missing
     getAllGroups: jest.fn(),
     updateGroupThemes: jest.fn(),
     deleteGroup: jest.fn(),
@@ -30,6 +31,9 @@ globalThis.browser = {
     runtime: {
         onMessage: {
             addListener: jest.fn()
+        },
+        onInstalled: {
+            addListener: jest.fn()
         }
     }
 };
@@ -40,6 +44,7 @@ jest.spyOn(console, 'warn').mockImplementation(() => {});
 jest.spyOn(console, 'error').mockImplementation(() => {});
 
 const { initialize, handleMessage } = await import('../../src/background/background.js');
+const onInstalledListener = browser.runtime.onInstalled.addListener.mock.calls[0][0];
 const { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } = await import('../../src/lib/themeAPI.js');
 
 // Flushes all pending microtasks/promises in the queue.
@@ -49,7 +54,12 @@ const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
 
 // Mock console methods to prevent actual logging during tests
 beforeEach(() => {
-    jest.clearAllMocks();
+    // Only clear call history, don't destroy the mock functions
+    Object.values(mockManager).forEach(fn => {
+        if (typeof fn?.mockClear === 'function') {
+            fn.mockClear();
+        }
+    });
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -246,5 +256,35 @@ it('SAVE_GROUP should return error when group not found', async () => {
         handleMessage({ type: 'GET_INSTALLED_THEMES' }, {}, sendResponse);
         await flushPromises();
         expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'API failure' });
+    });
+});
+
+// ============================================================================
+// EXTENSION INSTALLATION TESTS
+// ============================================================================
+
+describe('Extension Installation', () => {
+    it('should create default group on install', () => {
+        console.log('mockManager keys:', Object.keys(mockManager));
+        console.log('createGroup type:', typeof mockManager.createGroup);
+        console.log('createGroup value:', mockManager.createGroup);
+    });
+
+    it('should create default group on install', () => {
+        mockManager.createGroup.mockReturnValue({ id: 'default-id' });
+        onInstalledListener({ reason: 'install' });
+        expect(mockManager.createGroup).toHaveBeenCalledWith("Default Group", [
+            "default-theme@mozilla.org",
+            "firefox-compact-light@mozilla.org",
+            "firefox-compact-dark@mozilla.org",
+            "firefox-alpenglow@mozilla.org",
+        ]);
+        expect(mockManager.setActiveGroupId).toHaveBeenCalledWith('default-id');
+        expect(mockManager.save).toHaveBeenCalled();
+    });
+
+    it('should not create group on update', () => {
+        onInstalledListener({ reason: 'update' });
+        expect(mockManager.createGroup).not.toHaveBeenCalled();
     });
 });
