@@ -6,35 +6,69 @@
     <link rel="stylesheet" href="options.css">
 </head>
 <body>
-    <header>
-        <h1>Theme Management</h1>
-    </header>
+    <div class="page-layout">
 
-    <main>
-        <section id="management-controls">
-            <h2>Management Controls</h2>
-            <button id="create-group-btn">Create New Group</button>
-        </section>
-
-        <hr>
-
-        <section id="theme-groups-container">
-            <h2>Theme Groups</h2>
-            <div id="groups-list">
-                <p>No groups created yet.</p>
+        <!-- Sidebar — persistent unassigned themes panel -->
+        <aside class="sidebar">
+            <h2 class="sidebar-heading">Unassigned Themes</h2>
+            <div id="unassigned-list" class="sidebar-theme-list">
+                <p class="empty-message">All themes are currently assigned.</p>
             </div>
-        </section>
+        </aside>
 
-        <hr>
+        <!-- Main content area -->
+        <div class="content">
 
-        <section id="unassigned-themes">
-            <h2>Unassigned Themes</h2>
-            <div id="unassigned-list" class="theme-list">
-                <p>All themes are currently assigned.</p>
-            </div>
-        </section>
-    </main>
+            <!-- Banner — icon + extension name + version -->
+            <header class="banner">
+                <img
+                    src="../icons/v2/icon-128.png"
+                    alt="Extension icon"
+                    class="banner-icon"
+                    width="64"
+                    height="64"
+                >
+                <div class="banner-text">
+                    <h1 id="extension-name">HueVault</h1>
+                    <p id="extension-version" class="version-label"></p>
+                </div>
+            </header>
+
+            <!-- Theme Groups -->
+            <section id="theme-groups-container">
+                <div class="section-header">
+                    <h2>Theme Groups</h2>
+                    <button
+                        id="create-group-btn"
+                        type="button"
+                        aria-label="Create new group"
+                    >Create New Group</button>
+                </div>
+
+                <div id="groups-list">
+                    <p class="empty-message">No groups created yet.</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
 
     <script src="options.js"></script>
+    <script>
+        // Pull extension name + version from manifest for the banner
+            try {
+                const manifest = browser.runtime.getManifest();
+                const nameEl = document.getElementById("extension-name");
+                const versionEl = document.getElementById("extension-version");
+                if (nameEl && manifest.name) {
+                    nameEl.textContent = manifest.name;
+                }
+                if (versionEl && manifest.version) {
+                    versionEl.textContent = `(${manifest.version})`;
+                }
+            } catch (e) {
+                console.error("Could not read manifest:", e);
+            }
+    </script>
 </body>
 </html>
