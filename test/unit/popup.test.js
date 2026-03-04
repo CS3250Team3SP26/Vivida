@@ -12,6 +12,7 @@ globalThis.browser = {
 document.body.innerHTML = `
   <span id="currentGroupName"></span>
   <ul id="themesList"></ul>
+  <button id="manageGroupsBtn"></button>
 `;
 
 const { renderThemes } = await import('../../src/popup/popup.js');
