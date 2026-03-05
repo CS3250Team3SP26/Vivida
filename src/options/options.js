@@ -266,7 +266,7 @@ async function handleCreateGroup() {
 
     try {
         const response = await sendMessage("CREATE_GROUP", { name: groupName.trim() });
-        if (response && response.success) {
+        if (response?.success) {
             allGroups.push({ id: response.id, name: groupName.trim(), themes: [] });
             renderGroups();
             renderSidebar();
@@ -285,11 +285,11 @@ async function handleCreateGroup() {
 
 function escapeHtml(string) {
     return string
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replaceAll('&', "&amp;")
+        .replaceAll('<', "&lt;")
+        .replaceAll('>', "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 // ===========================================================================
