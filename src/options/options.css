@@ -368,6 +368,157 @@ section h2 {
   border: 0;
 }
 
+/* ── Active group card ──────────────────────────────────────────── */
+.group-card--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(0, 96, 223, 0.08);
+}
+
+/* ── Group card header layout ───────────────────────────────────── */
+.group-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.group-card-header-left h3 {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Active group checkbox ──────────────────────────────────────── */
+.active-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Hide the native checkbox visually but keep it accessible */
+.active-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Custom checkbox box */
+.active-checkbox-custom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Checkmark via SVG mask */
+.active-checkbox-custom::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  background-color: #fff;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transition: opacity 0.1s ease;
+}
+
+/* Checked state */
+.active-checkbox:checked + .active-checkbox-custom {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.active-checkbox:checked + .active-checkbox-custom::after {
+  opacity: 1;
+}
+
+/* Hover state for unchecked */
+.active-checkbox-label:hover .active-checkbox-custom {
+  border-color: var(--accent);
+}
+
+/* Focus ring on custom element */
+.active-checkbox:focus-visible + .active-checkbox-custom {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.active-checkbox-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.active-checkbox:checked ~ .active-checkbox-text {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* ── Theme dot indicator ─────────────────────────────────────────── */
+.theme-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
+
+.theme-dot--active {
+  background: var(--accent);
+}
+
+/* ── Active theme badge ──────────────────────────────────────────── */
+.active-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0 5px;
+  line-height: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── Small button variant ───────────────────────────────────────── */
+.btn-sm {
+  padding: 3px 9px;
+  font-size: 12px;
+}
+
 /* ── Scrollbar (WebKit) ─────────────────────────────────────────── */
 body::-webkit-scrollbar {
   width: 8px;
