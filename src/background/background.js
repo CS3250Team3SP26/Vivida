@@ -47,6 +47,17 @@ const messageHandlers = {
   // -- Storage handlers --
 
   /**
+   * @param {Object} message
+   * @param {string} message.name - The name of the group to create
+   * @returns {Promise<{success: boolean, id: string}>} 
+   */
+  CREATE_GROUP: async (message) => {
+    const { id, group } = manager.createGroup(message.name);
+    await manager.save();
+    return { success: true, id, name: group.name, themes: [] };
+  },
+
+  /**
    *
    * @param {Object} _message
    * @returns {Promise<{success: boolean, data: Array<Object>}>} - Response containing success status and serialized theme groups data
