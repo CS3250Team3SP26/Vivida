@@ -602,6 +602,78 @@ describe('GroupManager', () => {
         });
     });
 
+    describe('renameGroup', () => {
+        test('should rename an existing group and return true', () => {
+            const { id } = manager.createGroup('Original Name');
+
+            const result = manager.renameGroup(id, 'New Name');
+
+            expect(result).toBe(true);
+            expect(manager.getGroup(id).name).toBe('New Name');
+        });
+
+        test('should return false for a non-existent ID', () => {
+            const result = manager.renameGroup('non_existent_id', 'New Name');
+
+            expect(result).toBe(false);
+        });
+
+        test('should succeed when renaming to the same name (no-op)', () => {
+            const { id } = manager.createGroup('Same Name');
+
+            const result = manager.renameGroup(id, 'Same Name');
+
+            expect(result).toBe(true);
+            expect(manager.getGroup(id).name).toBe('Same Name');
+        });
+
+        test('should throw Error when new name belongs to a different group', () => {
+            manager.createGroup('Taken Name');
+            const { id } = manager.createGroup('My Group');
+
+            expect(() => manager.renameGroup(id, 'Taken Name')).toThrow(Error);
+            expect(() => manager.renameGroup(id, 'Taken Name')).toThrow(/already exists/);
+        });
+
+        test('should not change the name when collision is detected', () => {
+            manager.createGroup('Taken Name');
+            const { id } = manager.createGroup('My Group');
+
+            try { manager.renameGroup(id, 'Taken Name'); } catch { /* expected */ }
+
+            expect(manager.getGroup(id).name).toBe('My Group');
+        });
+
+        test('should throw TypeError for non-string ID', () => {
+            expect(() => manager.renameGroup(123, 'New Name')).toThrow(TypeError);
+            expect(() => manager.renameGroup(null, 'New Name')).toThrow(TypeError);
+        });
+
+        test('should throw TypeError for empty string name', () => {
+            const { id } = manager.createGroup('Test Group');
+
+            expect(() => manager.renameGroup(id, '')).toThrow(TypeError);
+            expect(() => manager.renameGroup(id, '   ')).toThrow(TypeError);
+        });
+
+        test('should throw TypeError for non-string name', () => {
+            const { id } = manager.createGroup('Test Group');
+
+            expect(() => manager.renameGroup(id, 123)).toThrow(TypeError);
+            expect(() => manager.renameGroup(id, null)).toThrow(TypeError);
+        });
+
+        test('should allow renaming two different groups without collision', () => {
+            const { id: id1 } = manager.createGroup('Group A');
+            const { id: id2 } = manager.createGroup('Group B');
+
+            expect(() => manager.renameGroup(id1, 'Group X')).not.toThrow();
+            expect(() => manager.renameGroup(id2, 'Group Y')).not.toThrow();
+            expect(manager.getGroup(id1).name).toBe('Group X');
+            expect(manager.getGroup(id2).name).toBe('Group Y');
+        });
+    });
+
     describe('hasGroupID', () => {
         test('should return false when no groups exist', () => {
             expect(manager.hasGroupID('group_1')).toBe(false);

@@ -91,6 +91,22 @@ const messageHandlers = {
   /**
    *
    * @param {Object} message
+   * @param {string} message.groupId - The ID of the group to rename
+   * @param {string} message.newName - The new name for the group
+   * @returns {Promise<{success: boolean, error?: string}>} - Response containing success status
+   */
+  RENAME_GROUP: async (message) => {
+    const result = manager.renameGroup(message.groupId, message.newName);
+    if (!result) {
+      return { success: false, error: "Group not found" };
+    }
+    await manager.save();
+    return { success: true };
+  },
+
+  /**
+   *
+   * @param {Object} message
    * @param {string} message.groupId - The ID of the group to delete
    * @returns {Promise<{success: boolean}>} - Response containing success status
    */

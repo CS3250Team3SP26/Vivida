@@ -371,7 +371,7 @@ class GroupManager {
 
         /**
          * Checks if a group with the given ID exists
-         * 
+         *
          * @param {string} id - The ID to check for existence
          * @returns {boolean} True if a group with the ID exists, false otherwise
          * @throws {TypeError} If id is not a string
@@ -383,7 +383,46 @@ class GroupManager {
 
             return this.groups.has(id);
         }
-        
+
+        /**
+         * Renames an existing theme group.
+         *
+         * @param {string} id - The ID of the group to rename
+         * @param {string} newName - The new name for the group
+         * @returns {boolean} True if the group was renamed, false if the group was not found
+         * @throws {TypeError} If id is not a string
+         * @throws {TypeError} If newName is not a non-empty string
+         * @throws {Error} If a different group with newName already exists
+         */
+        renameGroup(id, newName) {
+            if (typeof id !== 'string') {
+                throw new TypeError('Group ID must be a string');
+            }
+            if (typeof newName !== 'string' || newName.trim() === '') {
+                throw new TypeError('Group name must be a non-empty string');
+            }
+
+            const group = this.groups.get(id);
+            if (!group) {
+                return false;
+            }
+
+            // Renaming to the same name is a no-op
+            if (group.name === newName) {
+                return true;
+            }
+
+            // Check for name collision with a different group
+            for (const [gid, g] of this.groups) {
+                if (gid !== id && g.name === newName) {
+                    throw new Error(`A group with the name "${newName}" already exists.`);
+                }
+            }
+
+            group.name = newName;
+            return true;
+        }
+
     }
     
 export { GroupManager };
