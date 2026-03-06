@@ -93,7 +93,7 @@ const messageHandlers = {
    * @param {Object} message
    * @param {string} message.groupId - The ID of the group to rename
    * @param {string} message.newName - The new name for the group
-   * @returns {Promise<{success: boolean, error?: string}>} - Response containing success status
+   * @returns {Promise<Object>} - Response containing success status
    */
   RENAME_GROUP: async (message) => {
     const result = manager.renameGroup(message.groupId, message.newName);
