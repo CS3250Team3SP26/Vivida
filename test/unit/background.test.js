@@ -3,10 +3,11 @@ import { jest } from '@jest/globals';
 // Mock GroupManager named exports
 const mockManager = {
     initialize: jest.fn(),
-    createGroup: jest.fn(),       // <-- this was missing
+    createGroup: jest.fn(),
     getAllGroups: jest.fn(),
     updateGroupThemes: jest.fn(),
     deleteGroup: jest.fn(),
+    renameGroup: jest.fn(),
     setActiveGroupId: jest.fn(),
     getActiveGroup: jest.fn(),
     save: jest.fn(),
@@ -194,6 +195,35 @@ it('SAVE_GROUP should return error when group not found', async () => {
 
 
 
+
+    it('RENAME_GROUP should rename a group and save', async () => {
+        const sendResponse = jest.fn();
+        mockManager.renameGroup.mockReturnValue(true);
+        mockManager.save.mockResolvedValue(undefined);
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'New Name' }, {}, sendResponse);
+        await flushPromises();
+        expect(mockManager.renameGroup).toHaveBeenCalledWith('id-123', 'New Name');
+        expect(mockManager.save).toHaveBeenCalled();
+        expect(sendResponse).toHaveBeenCalledWith({ success: true });
+    });
+
+    it('RENAME_GROUP should return error when group not found', async () => {
+        const sendResponse = jest.fn();
+        mockManager.renameGroup.mockReturnValue(false);
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'New Name' }, {}, sendResponse);
+        await flushPromises();
+        expect(mockManager.renameGroup).toHaveBeenCalledWith('id-123', 'New Name');
+        expect(mockManager.save).not.toHaveBeenCalled();
+        expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Group not found' });
+    });
+
+    it('RENAME_GROUP should propagate handler errors to sendResponse', async () => {
+        const sendResponse = jest.fn();
+        mockManager.renameGroup.mockImplementation(() => { throw new Error('Duplicate name'); });
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'Taken' }, {}, sendResponse);
+        await flushPromises();
+        expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Duplicate name' });
+    });
 
     // -- Theme API handler tests --
 

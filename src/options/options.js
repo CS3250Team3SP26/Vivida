@@ -24,6 +24,10 @@ function sendMessage(type, extra = {}) {
 // DATA LOADING
 // ===========================================================================
 
+/**
+ * Loads all state from the background script and populates module-level variables.
+ * @returns {Promise<void>}
+ */
 async function loadData() {
     try {
         const [groupsResponse, themesResponse, activeGroupResponse, currentResponse] = await Promise.all([
@@ -81,6 +85,7 @@ function renderSidebar() {
     for (const theme of unassigned) {
         const item = document.createElement("div");
         item.className = "theme-item";
+        item.draggable = true;
         if (theme.id === currentThemeId) item.classList.add("active");
 
         item.innerHTML = `
@@ -88,6 +93,16 @@ function renderSidebar() {
             <span class="theme-name">${escapeHtml(theme.name)}</span>
             ${theme.id === currentThemeId ? '<span class="active-badge">active</span>' : ""}
         `;
+
+        item.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("application/json", JSON.stringify({ themeId: theme.id, sourceGroupId: null }));
+            event.dataTransfer.effectAllowed = "move";
+            item.classList.add("dragging");
+        });
+        item.addEventListener("dragend", () => {
+            item.classList.remove("dragging");
+        });
+
         container.appendChild(item);
     }
 }
@@ -123,7 +138,7 @@ function buildGroupCard(group) {
     const header = document.createElement("div");
     header.className = "group-card-header";
 
-    // Left: checkbox + name
+    // Left: checkbox + name + rename button
     const left = document.createElement("div");
     left.className = "group-card-header-left";
 
@@ -138,7 +153,6 @@ function buildGroupCard(group) {
     checkbox.setAttribute("aria-label", `Set "${group.name}" as active group`);
     checkbox.addEventListener("change", () => handleSetActiveGroup(group.id, checkbox));
 
-    // fix: checkboxCustom was appended but never declared
     const checkboxCustom = document.createElement("span");
     checkboxCustom.className = "active-checkbox-custom";
     checkboxCustom.setAttribute("aria-hidden", "true");
@@ -154,16 +168,63 @@ function buildGroupCard(group) {
     const groupName = document.createElement("h3");
     groupName.textContent = group.name;
 
+    const renameButton = document.createElement("button");
+    renameButton.className = "btn btn-sm btn-icon";
+    renameButton.type = "button";
+    renameButton.setAttribute("aria-label", `Rename group "${group.name}"`);
+    renameButton.title = "Rename group";
+    renameButton.textContent = "\u270F"; // ✏ pencil
+
+    renameButton.addEventListener("click", () => {
+        groupName.style.display = "none";
+        renameButton.style.display = "none";
+
+        const renameInput = document.createElement("input");
+        renameInput.type = "text";
+        renameInput.className = "rename-input";
+        renameInput.value = group.name;
+        renameInput.setAttribute("aria-label", "New group name");
+
+        const confirmBtn = document.createElement("button");
+        confirmBtn.type = "button";
+        confirmBtn.className = "btn btn-sm";
+        confirmBtn.textContent = "Confirm";
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.className = "btn btn-sm";
+        cancelBtn.textContent = "Cancel";
+
+        async function doConfirm() {
+            const newName = renameInput.value.trim();
+            if (newName) {
+                await handleRenameGroup(group.id, newName);
+            }
+        }
+
+        confirmBtn.addEventListener("click", doConfirm);
+        renameInput.addEventListener("keydown", async (event) => {
+            if (event.key === "Enter") await doConfirm();
+            if (event.key === "Escape") { renderGroups(); renderSidebar(); }
+        });
+        cancelBtn.addEventListener("click", () => { renderGroups(); renderSidebar(); });
+
+        left.appendChild(renameInput);
+        left.appendChild(confirmBtn);
+        left.appendChild(cancelBtn);
+        renameInput.focus();
+        renameInput.select();
+    });
+
     left.appendChild(checkboxWrapper);
     left.appendChild(groupName);
+    left.appendChild(renameButton);
 
     // Right: actions
-    // fix: declared as "right" but then referenced as "actions" — unified to "actions"
     const actions = document.createElement("div");
     actions.className = "group-card-actions";
 
     const deleteButton = document.createElement("button");
-    // fix: wrong class names — "button button--danger button--small" don't exist in CSS
     deleteButton.className = "btn btn-danger btn-sm";
     deleteButton.type = "button";
     deleteButton.textContent = "Delete";
@@ -179,6 +240,37 @@ function buildGroupCard(group) {
     const themeList = document.createElement("div");
     themeList.className = "theme-list";
 
+    // Drop zone: accept themes dragged from the unassigned panel
+    themeList.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        themeList.classList.add("drag-over");
+    });
+    themeList.addEventListener("dragleave", (event) => {
+        if (!themeList.contains(event.relatedTarget)) {
+            themeList.classList.remove("drag-over");
+        }
+    });
+    themeList.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        themeList.classList.remove("drag-over");
+
+        let data;
+        try {
+            data = JSON.parse(event.dataTransfer.getData("application/json"));
+        } catch {
+            return;
+        }
+
+        const { themeId, sourceGroupId } = data;
+        // Only accept drops from the unassigned panel
+        if (sourceGroupId !== null) return;
+        // Skip if already in this group
+        if (group.themes.includes(themeId)) return;
+
+        await handleAddThemeToGroup(group.id, themeId);
+    });
+
     if (group.themes.length === 0) {
         const empty = document.createElement("p");
         empty.className = "empty-message";
@@ -186,8 +278,7 @@ function buildGroupCard(group) {
         themeList.appendChild(empty);
     } else {
         for (const themeId of group.themes) {
-            // fix: called "createGroupThemeItem" which doesn't exist — correct name is buildThemeItem
-            themeList.appendChild(buildThemeItem(themeId));
+            themeList.appendChild(buildThemeItem(themeId, group.id));
         }
     }
 
@@ -197,19 +288,34 @@ function buildGroupCard(group) {
     return card;
 }
 
-function buildThemeItem(themeId) {
+/**
+ * Builds a single theme row for display inside a group card.
+ * @param {string} themeId - The theme extension ID.
+ * @param {string} groupId - The ID of the containing group (used for drag data).
+ * @returns {HTMLElement}
+ */
+function buildThemeItem(themeId, groupId) {
     const isCurrent = themeId === currentThemeId;
     const name = getThemeName(themeId);
 
     const item = document.createElement("div");
-    // fix: "theme-item--active" isn't in CSS, correct class is "active"
     item.className = `theme-item${isCurrent ? " active" : ""}`;
+    item.draggable = true;
 
     item.innerHTML = `
         <span class="theme-dot ${isCurrent ? "theme-dot--active" : ""}"></span>
         <span class="theme-name">${escapeHtml(name)}</span>
         ${isCurrent ? '<span class="active-badge">active</span>' : ""}
     `;
+
+    item.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("application/json", JSON.stringify({ themeId, sourceGroupId: groupId }));
+        event.dataTransfer.effectAllowed = "move";
+        item.classList.add("dragging");
+    });
+    item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+    });
 
     return item;
 }
@@ -241,8 +347,6 @@ async function handleSetActiveGroup(groupId, checkbox) {
 }
 
 async function handleDeleteGroup(groupId, groupName) {
-    // fix: missing "return" after the guard — the try/catch was inside the if block
-    // so delete only ran when the user clicked Cancel
     if (!confirm(`Delete group "${groupName}"? This action cannot be undone.`)) return;
 
     try {
@@ -279,6 +383,88 @@ async function handleCreateGroup() {
     }
 }
 
+/**
+ * Adds a theme from the unassigned panel into a group.
+ * Sends SAVE_GROUP and updates local state on success.
+ *
+ * @param {string} groupId - The target group ID.
+ * @param {string} themeId - The theme to add.
+ * @returns {Promise<void>}
+ */
+async function handleAddThemeToGroup(groupId, themeId) {
+    const group = allGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const updatedThemes = [...group.themes, themeId];
+
+    try {
+        const response = await sendMessage("SAVE_GROUP", { groupId, themes: updatedThemes });
+        if (response.success) {
+            group.themes = updatedThemes;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to add theme to group:", response.error);
+        }
+    } catch (error) {
+        console.error("Error adding theme to group:", error);
+    }
+}
+
+/**
+ * Removes a theme from a group, returning it to the unassigned panel.
+ * Sends SAVE_GROUP and updates local state on success.
+ *
+ * @param {string} groupId - The source group ID.
+ * @param {string} themeId - The theme to remove.
+ * @returns {Promise<void>}
+ */
+async function handleRemoveThemeFromGroup(groupId, themeId) {
+    const group = allGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const updatedThemes = group.themes.filter(id => id !== themeId);
+
+    try {
+        const response = await sendMessage("SAVE_GROUP", { groupId, themes: updatedThemes });
+        if (response.success) {
+            group.themes = updatedThemes;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to remove theme from group:", response.error);
+        }
+    } catch (error) {
+        console.error("Error removing theme from group:", error);
+    }
+}
+
+/**
+ * Renames a group via the background script.
+ * Updates local state and re-renders on success.
+ *
+ * @param {string} groupId - The ID of the group to rename.
+ * @param {string} newName - The new display name.
+ * @returns {Promise<void>}
+ */
+async function handleRenameGroup(groupId, newName) {
+    try {
+        const response = await sendMessage("RENAME_GROUP", { groupId, newName });
+        if (response.success) {
+            const group = allGroups.find(g => g.id === groupId);
+            if (group) group.name = newName;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to rename group:", response.error);
+            alert(`Could not rename group: ${response.error || "Unknown error"}`);
+        }
+    } catch (error) {
+        console.error("Error renaming group:", error);
+        alert("An error occurred while renaming the group.");
+    }
+}
+
 // ===========================================================================
 // UTILITY
 // ===========================================================================
@@ -293,13 +479,55 @@ function escapeHtml(string) {
 }
 
 // ===========================================================================
+// DROP ZONE INITIALIZATION (called once from init)
+// ===========================================================================
+
+/**
+ * Sets up the unassigned panel as a drop target for themes dragged out of groups.
+ * Called once on page load so listeners do not accumulate across re-renders.
+ */
+function initDropZones() {
+    const container = document.getElementById("unassigned-list");
+    if (!container) return;
+
+    container.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        container.classList.add("drag-over");
+    });
+    container.addEventListener("dragleave", (event) => {
+        if (!container.contains(event.relatedTarget)) {
+            container.classList.remove("drag-over");
+        }
+    });
+    container.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        container.classList.remove("drag-over");
+
+        let data;
+        try {
+            data = JSON.parse(event.dataTransfer.getData("application/json"));
+        } catch {
+            return;
+        }
+
+        const { themeId, sourceGroupId } = data;
+        // Only accept drops that originated from a group
+        if (!sourceGroupId) return;
+
+        await handleRemoveThemeFromGroup(sourceGroupId, themeId);
+    });
+}
+
+// ===========================================================================
 // INITIALIZATION
 // ===========================================================================
 
 async function init() {
-    await loadData(); // fix: was "leadData"
+    await loadData();
     renderGroups();
     renderSidebar();
+    initDropZones();
 
     const createButton = document.getElementById("create-group-btn");
     if (createButton) {
@@ -308,3 +536,5 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+export { loadData, handleAddThemeToGroup, handleRemoveThemeFromGroup, handleRenameGroup };
