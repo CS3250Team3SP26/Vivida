@@ -68,7 +68,7 @@ function setupLoadDataMock() {
         switch (msg.type) {
             case 'GET_ALL_GROUPS':
                 // Deep copy so mutations in one test don't bleed into another
-                return Promise.resolve({ success: true, data: JSON.parse(JSON.stringify(TEST_GROUPS)) });
+                return Promise.resolve({ success: true, data: structuredClone(TEST_GROUPS) });
             case 'GET_INSTALLED_THEMES':
                 return Promise.resolve({ success: true, data: TEST_THEMES });
             case 'GET_ACTIVE_GROUP':
@@ -161,7 +161,7 @@ describe('handleAddThemeToGroup', () => {
 describe('handleRemoveThemeFromGroup', () => {
     beforeEach(async () => {
         setupLoadDataMock();
-        await loadData();
+        await loadData();    
         mockSendMessage.mockReset();
         mockSendMessage.mockResolvedValue({ success: true });
     });
