@@ -41,8 +41,15 @@ document.body.innerHTML = `
 // ---------------------------------------------------------------------------
 // Import the functions under test (dynamic import required for ESM mocks)
 // ---------------------------------------------------------------------------
-const { loadData, handleAddThemeToGroup, handleRemoveThemeFromGroup, handleRenameGroup } =
-    await import('../../src/options/options.js');
+const {
+    loadData,
+    handleAddThemeToGroup,
+    handleRemoveThemeFromGroup,
+    handleMoveThemeBetweenGroups,
+    handleRenameGroup,
+    handleDeleteGroup,
+    handleEnableTheme,
+} = await import('../../src/options/options.js');
 
 // ---------------------------------------------------------------------------
 // Shared test fixtures
@@ -303,6 +310,215 @@ describe('handleRenameGroup', () => {
             type: 'RENAME_GROUP',
             groupId: 'group-2',
             newName: 'Night Themes',
+        });
+    });
+});
+
+// ===========================================================================
+// handleMoveThemeBetweenGroups
+// ===========================================================================
+
+describe('handleMoveThemeBetweenGroups', () => {
+    beforeEach(async () => {
+        setupLoadDataMock();
+        await loadData();
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+    });
+
+    it('sends SAVE_GROUP for both source and target groups', async () => {
+        await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
+
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'SAVE_GROUP',
+            groupId: 'group-1',
+            themes: ['theme-b'],
+        });
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'SAVE_GROUP',
+            groupId: 'group-2',
+            themes: ['theme-c', 'theme-a'],
+        });
+        expect(mockSendMessage).toHaveBeenCalledTimes(2);
+    });
+
+    it('does nothing when the source group does not exist', async () => {
+        await handleMoveThemeBetweenGroups('nonexistent', 'group-2', 'theme-a');
+
+        expect(mockSendMessage).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the target group does not exist', async () => {
+        await handleMoveThemeBetweenGroups('group-1', 'nonexistent', 'theme-a');
+
+        expect(mockSendMessage).not.toHaveBeenCalled();
+    });
+
+    it('updates local state so subsequent calls see the moved theme', async () => {
+        await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
+
+        // Move theme-a back — it should now be in group-2
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+        await handleMoveThemeBetweenGroups('group-2', 'group-1', 'theme-a');
+
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'SAVE_GROUP',
+            groupId: 'group-2',
+            themes: ['theme-c'],
+        });
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'SAVE_GROUP',
+            groupId: 'group-1',
+            themes: ['theme-b', 'theme-a'],
+        });
+    });
+
+    it('does not update local state when either save fails', async () => {
+        mockSendMessage.mockResolvedValue({ success: false, error: 'Storage error' });
+
+        await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
+
+        // State unchanged — theme-a should still be in group-1
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+        await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
+
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'SAVE_GROUP',
+            groupId: 'group-1',
+            themes: ['theme-b'],
+        });
+    });
+});
+
+// ===========================================================================
+// handleDeleteGroup — auto-active-group on delete
+// ===========================================================================
+
+describe('handleDeleteGroup — auto-active on delete', () => {
+    beforeEach(async () => {
+        globalThis.confirm.mockReturnValue(true);
+        mockSendMessage.mockImplementation((msg) => {
+            switch (msg.type) {
+                case 'GET_ALL_GROUPS':
+                    return Promise.resolve({ success: true, data: JSON.parse(JSON.stringify(TEST_GROUPS)) }); // NOSONAR
+                case 'GET_INSTALLED_THEMES':
+                    return Promise.resolve({ success: true, data: TEST_THEMES });
+                case 'GET_ACTIVE_GROUP':
+                    return Promise.resolve({ success: true, data: 'group-1' });
+                case 'GET_CURRENT_THEME':
+                    return Promise.resolve({ success: true, data: null });
+                default:
+                    return Promise.resolve({ success: true });
+            }
+        });
+        await loadData();
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+    });
+
+    it('sends SET_ACTIVE_GROUP for the first remaining group when deleting the active group', async () => {
+        await handleDeleteGroup('group-1', 'Group One');
+
+        expect(mockSendMessage).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'SET_ACTIVE_GROUP', groupId: 'group-2' })
+        );
+    });
+
+    it('does not send SET_ACTIVE_GROUP when deleting a non-active group', async () => {
+        await handleDeleteGroup('group-2', 'Group Two');
+
+        const calls = mockSendMessage.mock.calls.map(c => c[0]);
+        expect(calls.some(c => c.type === 'SET_ACTIVE_GROUP')).toBe(false);
+    });
+
+    it('does not send SET_ACTIVE_GROUP when deleting the last group', async () => {
+        // Reload with only one group active
+        mockSendMessage.mockImplementation((msg) => {
+            switch (msg.type) {
+                case 'GET_ALL_GROUPS':
+                    return Promise.resolve({ success: true, data: [{ id: 'group-1', name: 'Group One', themes: [] }] });
+                case 'GET_INSTALLED_THEMES':
+                    return Promise.resolve({ success: true, data: [] });
+                case 'GET_ACTIVE_GROUP':
+                    return Promise.resolve({ success: true, data: 'group-1' });
+                case 'GET_CURRENT_THEME':
+                    return Promise.resolve({ success: true, data: null });
+                default:
+                    return Promise.resolve({ success: true });
+            }
+        });
+        await loadData();
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+
+        await handleDeleteGroup('group-1', 'Group One');
+
+        const calls = mockSendMessage.mock.calls.map(c => c[0]);
+        expect(calls.some(c => c.type === 'SET_ACTIVE_GROUP')).toBe(false);
+        expect(calls.some(c => c.type === 'DELETE_GROUP')).toBe(true);
+    });
+
+    it('does not delete the group if the user cancels the confirmation', async () => {
+        globalThis.confirm.mockReturnValue(false);
+
+        await handleDeleteGroup('group-1', 'Group One');
+
+        expect(mockSendMessage).not.toHaveBeenCalled();
+    });
+});
+
+// ===========================================================================
+// handleEnableTheme
+// ===========================================================================
+
+describe('handleEnableTheme', () => {
+    beforeEach(async () => {
+        setupLoadDataMock();
+        await loadData();
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+    });
+
+    it('sends ENABLE_THEME with the correct themeId', async () => {
+        await handleEnableTheme('theme-a');
+
+        expect(mockSendMessage).toHaveBeenCalledTimes(1);
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'ENABLE_THEME',
+            themeId: 'theme-a',
+        });
+    });
+
+    it('updates currentThemeId in local state on success', async () => {
+        await handleEnableTheme('theme-a');
+
+        // Switching to a second theme should succeed; verifies the first update persisted
+        mockSendMessage.mockReset();
+        mockSendMessage.mockResolvedValue({ success: true });
+        await handleEnableTheme('theme-b');
+
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'ENABLE_THEME',
+            themeId: 'theme-b',
+        });
+    });
+
+    it('logs an error and does not update state when the response indicates failure', async () => {
+        mockSendMessage.mockResolvedValue({ success: false, error: 'Theme not found' });
+
+        await handleEnableTheme('theme-a');
+
+        expect(console.error).toHaveBeenCalledWith('Failed to enable theme:', 'Theme not found');
+    });
+
+    it('works for a theme in the second group', async () => {
+        await handleEnableTheme('theme-c');
+
+        expect(mockSendMessage).toHaveBeenCalledWith({
+            type: 'ENABLE_THEME',
+            themeId: 'theme-c',
         });
     });
 });

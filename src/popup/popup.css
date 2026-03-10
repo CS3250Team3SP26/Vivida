@@ -73,6 +73,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 336px;
+  text-align: center;
 }
 
 /* ── Theme list ─────────────────────────────────────────────────── */
