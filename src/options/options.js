@@ -399,34 +399,42 @@ async function handleSetActiveGroup(groupId, checkbox) {
  */
 async function handleDeleteGroup(groupId, groupName) {
     if (!confirm(`Delete group "${groupName}"? This action cannot be undone.`)) return;
-
     try {
         const response = await sendMessage("DELETE_GROUP", { groupId });
-        if (response.success) {
-            allGroups = allGroups.filter(g => g.id !== groupId);
-
-            if (activeGroupId === groupId) {
-                activeGroupId = null;
-                if (allGroups.length > 0) {
-                    const newActiveId = allGroups[0].id;
-                    try {
-                        const activeResponse = await sendMessage("SET_ACTIVE_GROUP", { groupId: newActiveId });
-                        if (activeResponse.success) {
-                            activeGroupId = newActiveId;
-                        }
-                    } catch (e) {
-                        console.error("Error setting new active group after delete:", e);
-                    }
-                }
-            }
-
-            renderGroups();
-            renderSidebar();
-        } else {
-            console.error("Failed to delete group:", response.error);
-        }
+        if (!response.success) { console.error("Failed to delete group:", response.error); return; }
+        await handleUpdateStateAfterDelete(groupId);
+        renderGroups();
+        renderSidebar();
     } catch (error) {
         console.error("Error deleting group:", error);
+    }
+}
+
+/**
+ * Sets a new active group after the current active group is deleted.
+ * @returns {Promise<void>}
+ */
+async function handleSetNewActiveGroup() {
+    if (allGroups.length === 0) return;
+    const newActiveId = allGroups[0].id;
+    try {
+        const response = await sendMessage("SET_ACTIVE_GROUP", { groupId: newActiveId });
+        if (response.success) activeGroupId = newActiveId;
+    } catch (e) {
+        console.error("Error setting new active group after delete:", e);
+    }
+}
+
+/**
+ * Updates the local state after a group is deleted.
+ * @param {string} groupId - The ID of the deleted group.
+ * @returns {Promise<void>}
+ */
+async function handleUpdateStateAfterDelete(groupId) {
+    allGroups = allGroups.filter(g => g.id !== groupId);
+    if (activeGroupId === groupId) {
+        activeGroupId = null;
+        await handleSetNewActiveGroup();
     }
 }
 
