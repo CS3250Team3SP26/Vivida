@@ -60,33 +60,31 @@
     </div>
 
     <!-- Info modal -->
-    <div id="info-modal-overlay" class="modal-overlay" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div class="modal-header">
-                <h2 id="modal-title">HueVault Help</h2>
-                <button id="modal-close-btn" type="button" class="modal-close" aria-label="Close dialog">&times;</button>
-            </div>
-            <div class="modal-body">
-                <section>
-                    <h3>Active Group</h3>
-                    <p>The active group determines which themes are available in the popup for quick switching. Only themes assigned to the active group will appear when you click the extension icon.</p>
-                </section>
-                <section>
-                    <h3>Popup Menu</h3>
-                    <p>Clicking the extension icon opens the popup where you can switch between themes in the active group. Use it to quickly cycle through your curated themes without opening this page.</p>
-                </section>
-                <section>
-                    <h3>Drag and Drop</h3>
-                    <p>Themes can be dragged from the Unassigned Themes sidebar into any group, between groups, and back to the sidebar. Drop a theme onto a group's theme list to assign it, or drag it back to unassign it.</p>
-                </section>
-                <section>
-                    <h3>Rename</h3>
-                    <p>Groups can be renamed by clicking the pencil (&#x270F;) icon next to the group name. Type a new name and press Enter or click Confirm to save, or press Escape or click Cancel to discard.</p>
-                </section>
-                <p id="modal-version" class="modal-version"></p>
-            </div>
-        </div>
+<dialog id="info-modal" aria-labelledby="modal-title">
+    <div class="modal-header">
+        <h2 id="modal-title">Vivida Help</h2>
+        <button id="modal-close-btn" type="button" class="modal-close" aria-label="Close dialog">&times;</button>
     </div>
+    <div class="modal-body">
+        <section>
+            <h3>Active Group</h3>
+            <p>The active group determines which themes are available in the popup for quick switching. Only themes assigned to the active group will appear when you click the extension icon.</p>
+        </section>
+        <section>
+            <h3>Popup Menu</h3>
+            <p>Clicking the extension icon opens the popup where you can switch between themes in the active group. Use it to quickly cycle through your curated themes without opening this page.</p>
+        </section>
+        <section>
+            <h3>Drag and Drop</h3>
+            <p>Themes can be dragged from the Unassigned Themes sidebar into any group, between groups, and back to the sidebar. Drop a theme onto a group's theme list to assign it, or drag it back to unassign it.</p>
+        </section>
+        <section>
+            <h3>Rename</h3>
+            <p>Groups can be renamed by clicking the pencil (&#x270F;) icon next to the group name. Type a new name and press Enter or click Confirm to save, or press Escape or click Cancel to discard.</p>
+        </section>
+        <p id="modal-version" class="modal-version"></p>
+    </div>
+</dialog>
 
     <script src="options.js" type="module"></script>
     <script>

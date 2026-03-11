@@ -608,22 +608,8 @@ section h2 {
   outline-offset: 1px;
 }
 
-/* ── Info modal overlay ─────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-overlay[hidden] {
-  display: none;
-}
-
-.modal {
+/* ── Info modal (native <dialog>) ──────────────────────────────── */
+#info-modal {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -634,6 +620,19 @@ section h2 {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   scrollbar-width: thin;
   scrollbar-color: var(--active-bg) transparent;
+  padding: 0;        /* override browser default dialog padding */
+  color: inherit;    /* override browser default dialog color */
+
+  /* Center on screen */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0; /* override browser's default dialog margin: auto */
+}
+
+#info-modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {

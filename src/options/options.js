@@ -631,13 +631,13 @@ function escapeHtml(string) {
  * @returns {void}
  */
 function openInfoModal(version) {
-    const overlay = document.getElementById("info-modal-overlay");
+    const modal = document.getElementById("info-modal");
     const versionEl = document.getElementById("modal-version");
-    if (!overlay) return;
+    if (!modal) return;
     if (versionEl && version) {
         versionEl.textContent = `Version ${version}`;
     }
-    overlay.hidden = false;
+    modal.showModal();
 }
 
 /**
@@ -645,9 +645,9 @@ function openInfoModal(version) {
  * @returns {void}
  */
 function closeInfoModal() {
-    const overlay = document.getElementById("info-modal-overlay");
-    if (overlay) {
-        overlay.hidden = true;
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.close();
     }
 }
 
@@ -674,14 +674,18 @@ function initInfoModal() {
         closeBtn.addEventListener("click", closeInfoModal);
     }
 
-    const overlay = document.getElementById("info-modal-overlay");
-    if (overlay) {
-        overlay.addEventListener("click", (event) => {
-            if (event.target === overlay) {
-                closeInfoModal();
-            }
-        });
-    }
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.addEventListener("click", (event) => {
+        const rect = modal.getBoundingClientRect();
+        const clickedOutside =
+            event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top  || event.clientY > rect.bottom;
+        if (clickedOutside) {
+            closeInfoModal();
+        }
+    });
+}
 }
 
 // ===========================================================================
