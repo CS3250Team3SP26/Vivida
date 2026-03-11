@@ -39,12 +39,10 @@ document.body.innerHTML = `
     <div id="groups-list"></div>
     <button id="create-group-btn" type="button"></button>
     <button id="info-btn" type="button"></button>
-    <div id="info-modal-overlay" class="modal-overlay" hidden>
-        <div class="modal">
-            <button id="modal-close-btn" type="button"></button>
-            <p id="modal-version"></p>
-        </div>
-    </div>
+    <dialog id="info-modal">
+        <button id="modal-close-btn" type="button"></button>
+        <p id="modal-version"></p>
+    </dialog>
 `;
 
 // ---------------------------------------------------------------------------
@@ -410,18 +408,17 @@ describe('handleMoveThemeBetweenGroups', () => {
 
 describe('openInfoModal', () => {
     beforeEach(() => {
-        // Reset the overlay to its default hidden state before each test
-        const overlay = document.getElementById('info-modal-overlay');
-        overlay.hidden = true;
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
         const versionEl = document.getElementById('modal-version');
         versionEl.textContent = '';
     });
 
-    it('makes the modal overlay visible', () => {
+    it('calls showModal() on the dialog', () => {
         openInfoModal('1.2.3');
 
-        const overlay = document.getElementById('info-modal-overlay');
-        expect(overlay.hidden).toBe(false);
+        expect(document.getElementById('info-modal').showModal).toHaveBeenCalledTimes(1);
     });
 
     it('sets the version text with the provided version string', () => {
@@ -528,22 +525,23 @@ describe('handleDeleteGroup — auto-active on delete', () => {
 
 describe('closeInfoModal', () => {
     beforeEach(() => {
-        // Open the modal so we have a known starting state
-        const overlay = document.getElementById('info-modal-overlay');
-        overlay.hidden = false;
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
+        modal.showModal(); // put it in "open" state
     });
 
-    it('hides the modal overlay', () => {
+    it('calls close() on the dialog', () => {
+        const modal = document.getElementById('info-modal');
         closeInfoModal();
-
-        const overlay = document.getElementById('info-modal-overlay');
-        expect(overlay.hidden).toBe(true);
+        expect(modal.close).toHaveBeenCalledTimes(1);
     });
 
     it('is idempotent — calling it twice does not throw', () => {
+        const modal = document.getElementById('info-modal');
         closeInfoModal();
         expect(() => closeInfoModal()).not.toThrow();
-        expect(document.getElementById('info-modal-overlay').hidden).toBe(true);
+        expect(modal.close).toHaveBeenCalledTimes(2);
     });
 });
 
@@ -607,39 +605,37 @@ describe('handleEnableTheme', () => {
 
 describe('initInfoModal', () => {
     beforeEach(() => {
-        const overlay = document.getElementById('info-modal-overlay');
-        overlay.hidden = true;
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
         mockGetManifest.mockReturnValue({ version: '0.3.0' });
     });
 
     it('clicking the info button opens the modal', () => {
         initInfoModal();
-
         document.getElementById('info-btn').click();
-
-        expect(document.getElementById('info-modal-overlay').hidden).toBe(false);
+        expect(document.getElementById('info-modal').showModal).toHaveBeenCalled();
     });
 
-    it('clicking the close button hides the modal', () => {
+    it('clicking the close button closes the modal', () => {
         initInfoModal();
-        document.getElementById('info-modal-overlay').hidden = false;
-
         document.getElementById('modal-close-btn').click();
-
-        expect(document.getElementById('info-modal-overlay').hidden).toBe(true);
+        expect(document.getElementById('info-modal').close).toHaveBeenCalled();
     });
 
-    it('clicking the overlay backdrop hides the modal', () => {
+    it('clicking outside the dialog closes the modal', () => {
         initInfoModal();
-        const overlay = document.getElementById('info-modal-overlay');
-        overlay.hidden = false;
+        const modal = document.getElementById('info-modal');
 
-        // Simulate a click directly on the overlay (not on a child element)
-        const event = new MouseEvent('click', { bubbles: true });
-        Object.defineProperty(event, 'target', { value: overlay });
-        overlay.dispatchEvent(event);
+        // Simulate a click whose coordinates land outside the dialog's bounding rect
+        jest.spyOn(modal, 'getBoundingClientRect').mockReturnValue({
+            left: 100, right: 500, top: 100, bottom: 400
+        });
 
-        expect(overlay.hidden).toBe(true);
+        const event = new MouseEvent('click', { bubbles: true, clientX: 10, clientY: 10 });
+        modal.dispatchEvent(event);
+
+        expect(modal.close).toHaveBeenCalled();
     });
 
     it('uses the version from browser.runtime.getManifest()', () => {
