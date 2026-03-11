@@ -263,12 +263,16 @@ function buildGroupCard(group) {
         }
 
         const { themeId, sourceGroupId } = data;
-        // Only accept drops from the unassigned panel
-        if (sourceGroupId !== null) return;
         // Skip if already in this group
         if (group.themes.includes(themeId)) return;
 
-        await handleAddThemeToGroup(group.id, themeId);
+        if (sourceGroupId === null) {
+            // Dragged from the unassigned panel
+            await handleAddThemeToGroup(group.id, themeId);
+        } else if (sourceGroupId !== group.id) {
+            // Dragged from a different group — move it
+            await handleMoveThemeBetweenGroups(sourceGroupId, group.id, themeId);
+        }
     });
 
     if (group.themes.length === 0) {
@@ -412,6 +416,42 @@ async function handleAddThemeToGroup(groupId, themeId) {
 }
 
 /**
+ * Moves a theme directly from one group to another in a single atomic update.
+ * Sends SAVE_GROUP for both the source and target groups, then re-renders.
+ *
+ * @param {string} sourceGroupId - The group the theme is leaving.
+ * @param {string} targetGroupId - The group the theme is joining.
+ * @param {string} themeId - The theme being moved.
+ * @returns {Promise<void>}
+ */
+async function handleMoveThemeBetweenGroups(sourceGroupId, targetGroupId, themeId) {
+    const sourceGroup = allGroups.find(g => g.id === sourceGroupId);
+    const targetGroup = allGroups.find(g => g.id === targetGroupId);
+    if (!sourceGroup || !targetGroup) return;
+
+    const updatedSourceThemes = sourceGroup.themes.filter(id => id !== themeId);
+    const updatedTargetThemes = [...targetGroup.themes, themeId];
+
+    try {
+        const [sourceResponse, targetResponse] = await Promise.all([
+            sendMessage("SAVE_GROUP", { groupId: sourceGroupId, themes: updatedSourceThemes }),
+            sendMessage("SAVE_GROUP", { groupId: targetGroupId, themes: updatedTargetThemes }),
+        ]);
+
+        if (sourceResponse.success && targetResponse.success) {
+            sourceGroup.themes = updatedSourceThemes;
+            targetGroup.themes = updatedTargetThemes;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to move theme between groups:", sourceResponse.error || targetResponse.error);
+        }
+    } catch (error) {
+        console.error("Error moving theme between groups:", error);
+    }
+}
+
+/**
  * Removes a theme from a group, returning it to the unassigned panel.
  * Sends SAVE_GROUP and updates local state on success.
  *
@@ -537,4 +577,4 @@ async function init() {
 
 document.addEventListener("DOMContentLoaded", init);
 
-export { loadData, handleAddThemeToGroup, handleRemoveThemeFromGroup, handleRenameGroup };
+export { loadData, handleAddThemeToGroup, handleRemoveThemeFromGroup, handleMoveThemeBetweenGroups, handleRenameGroup };
