@@ -622,6 +622,73 @@ function escapeHtml(string) {
 }
 
 // ===========================================================================
+// INFO MODAL
+// ===========================================================================
+
+/**
+ * Opens the info modal and displays the given version string.
+ * @param {string} version - The extension version to display (e.g. "0.3.0").
+ * @returns {void}
+ */
+function openInfoModal(version) {
+    const modal = document.getElementById("info-modal");
+    const versionEl = document.getElementById("modal-version");
+    if (!modal) return;
+    if (versionEl && version) {
+        versionEl.textContent = `Version ${version}`;
+    }
+    modal.showModal();
+}
+
+/**
+ * Closes the info modal.
+ * @returns {void}
+ */
+function closeInfoModal() {
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.close();
+    }
+}
+
+/**
+ * Wires up the info button, close button, and backdrop-click to open/close the modal.
+ * Reads the extension version from the manifest once at setup time.
+ * @returns {void}
+ */
+function initInfoModal() {
+    let version = "";
+    try {
+        version = browser.runtime.getManifest().version;
+    } catch (e) {
+        console.error("Could not read manifest version:", e);
+    }
+
+    const infoBtn = document.getElementById("info-btn");
+    if (infoBtn) {
+        infoBtn.addEventListener("click", () => openInfoModal(version));
+    }
+
+    const closeBtn = document.getElementById("modal-close-btn");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeInfoModal);
+    }
+
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.addEventListener("click", (event) => {
+        const rect = modal.getBoundingClientRect();
+        const clickedOutside =
+            event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top  || event.clientY > rect.bottom;
+        if (clickedOutside) {
+            closeInfoModal();
+        }
+    });
+}
+}
+
+// ===========================================================================
 // DROP ZONE INITIALIZATION (called once from init)
 // ===========================================================================
 
@@ -676,6 +743,7 @@ async function init() {
     renderGroups();
     renderSidebar();
     initDropZones();
+    initInfoModal();
 
     const createButton = document.getElementById("create-group-btn");
     if (createButton) {
@@ -693,4 +761,7 @@ export {
     handleRenameGroup,
     handleDeleteGroup,
     handleEnableTheme,
+    openInfoModal,
+    closeInfoModal,
+    initInfoModal,
 };

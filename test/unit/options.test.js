@@ -14,10 +14,12 @@ import { jest } from '@jest/globals';
 // Browser API mock — must exist before the module is imported
 // ---------------------------------------------------------------------------
 const mockSendMessage = jest.fn();
+const mockGetManifest = jest.fn(() => ({ version: '0.3.0' }));
 
 globalThis.browser = {
     runtime: {
-        sendMessage: mockSendMessage
+        sendMessage: mockSendMessage,
+        getManifest: mockGetManifest
     }
 };
 
@@ -36,6 +38,11 @@ document.body.innerHTML = `
     <div id="unassigned-list" class="sidebar-theme-list"></div>
     <div id="groups-list"></div>
     <button id="create-group-btn" type="button"></button>
+    <button id="info-btn" type="button"></button>
+    <dialog id="info-modal">
+        <button id="modal-close-btn" type="button"></button>
+        <p id="modal-version"></p>
+    </dialog>
 `;
 
 // ---------------------------------------------------------------------------
@@ -49,6 +56,9 @@ const {
     handleRenameGroup,
     handleDeleteGroup,
     handleEnableTheme,
+    openInfoModal,
+    closeInfoModal,
+    initInfoModal,
 } = await import('../../src/options/options.js');
 
 // ---------------------------------------------------------------------------
@@ -393,6 +403,46 @@ describe('handleMoveThemeBetweenGroups', () => {
 });
 
 // ===========================================================================
+// openInfoModal
+// ===========================================================================
+
+describe('openInfoModal', () => {
+    beforeEach(() => {
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
+        const versionEl = document.getElementById('modal-version');
+        versionEl.textContent = '';
+    });
+
+    it('calls showModal() on the dialog', () => {
+        openInfoModal('1.2.3');
+
+        expect(document.getElementById('info-modal').showModal).toHaveBeenCalledTimes(1);
+    });
+
+    it('sets the version text with the provided version string', () => {
+        openInfoModal('1.2.3');
+
+        const versionEl = document.getElementById('modal-version');
+        expect(versionEl.textContent).toBe('Version 1.2.3');
+    });
+
+    it('does not throw when called with an empty version string', () => {
+        expect(() => openInfoModal('')).not.toThrow();
+    });
+
+    it('leaves existing version text unchanged when version is empty', () => {
+        const versionEl = document.getElementById('modal-version');
+        versionEl.textContent = 'Version 0.3.0';
+
+        openInfoModal('');
+
+        expect(versionEl.textContent).toBe('Version 0.3.0');
+    });
+});
+
+// ===========================================================================
 // handleDeleteGroup — auto-active-group on delete
 // ===========================================================================
 
@@ -470,6 +520,32 @@ describe('handleDeleteGroup — auto-active on delete', () => {
 });
 
 // ===========================================================================
+// closeInfoModal
+// ===========================================================================
+
+describe('closeInfoModal', () => {
+    beforeEach(() => {
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
+        modal.showModal(); // put it in "open" state
+    });
+
+    it('calls close() on the dialog', () => {
+        const modal = document.getElementById('info-modal');
+        closeInfoModal();
+        expect(modal.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('is idempotent — calling it twice does not throw', () => {
+        const modal = document.getElementById('info-modal');
+        closeInfoModal();
+        expect(() => closeInfoModal()).not.toThrow();
+        expect(modal.close).toHaveBeenCalledTimes(2);
+    });
+});
+
+// ===========================================================================
 // handleEnableTheme
 // ===========================================================================
 
@@ -520,5 +596,54 @@ describe('handleEnableTheme', () => {
             type: 'ENABLE_THEME',
             themeId: 'theme-c',
         });
+    });
+});
+
+// ===========================================================================
+// initInfoModal
+// ===========================================================================
+
+describe('initInfoModal', () => {
+    beforeEach(() => {
+        const modal = document.getElementById('info-modal');
+        modal.showModal = jest.fn();
+        modal.close = jest.fn();
+        mockGetManifest.mockReturnValue({ version: '0.3.0' });
+    });
+
+    it('clicking the info button opens the modal', () => {
+        initInfoModal();
+        document.getElementById('info-btn').click();
+        expect(document.getElementById('info-modal').showModal).toHaveBeenCalled();
+    });
+
+    it('clicking the close button closes the modal', () => {
+        initInfoModal();
+        document.getElementById('modal-close-btn').click();
+        expect(document.getElementById('info-modal').close).toHaveBeenCalled();
+    });
+
+    it('clicking outside the dialog closes the modal', () => {
+        initInfoModal();
+        const modal = document.getElementById('info-modal');
+
+        // Simulate a click whose coordinates land outside the dialog's bounding rect
+        jest.spyOn(modal, 'getBoundingClientRect').mockReturnValue({
+            left: 100, right: 500, top: 100, bottom: 400
+        });
+
+        const event = new MouseEvent('click', { bubbles: true, clientX: 10, clientY: 10 });
+        modal.dispatchEvent(event);
+
+        expect(modal.close).toHaveBeenCalled();
+    });
+
+    it('uses the version from browser.runtime.getManifest()', () => {
+        mockGetManifest.mockReturnValue({ version: '9.9.9' });
+        initInfoModal();
+
+        document.getElementById('info-btn').click();
+
+        expect(document.getElementById('modal-version').textContent).toBe('Version 9.9.9');
     });
 });
