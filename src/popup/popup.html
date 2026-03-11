@@ -1,38 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ThemeGroups</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Theme Group Switcher</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
+  <body>
+    <div class="popup-container">
+      <!-- Header -->
+      <header class="popup-header">
+        <h1 id="currentGroupName" class="current-group">Loading...</h1>
+      </header>
 
-<body>
-  <div class="container">
-    <header class="header">
-      <h1>Theme Groups</h1>
-    </header>
+      <!-- Body -->
+      <main class="popup-body">
+        <ul id="themesList" class="theme-list" aria-label="Theme options"></ul>
+      </main>
 
-    <main class="main">
-      <section class="groups-section">
-        <h2>Your Groups</h2>
-        <ul class="groups-list" id="groupsList">
-          <li class="loading">Loading groups...</li>
-        </ul>
-      </section>
-    </main>
-
-    <div class="actions-section">
-      <button class="btn btn-primary">New Group</button>
-      <button class="btn btn-secondary">Settings</button>
+      <!-- Footer -->
+      <footer class="popup-footer">
+        <button id="manageGroupsBtn" class="manage-btn" type="button">
+          Manage Groups
+        </button>
+      </footer>
     </div>
 
-    <footer class="footer">
-      <small>Theme Group Switcher v0.3</small>
-    </footer>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-
+    <!-- Popup logic -->
+    <script type="module" src="popup.js"></script>
+  </body>
 </html>

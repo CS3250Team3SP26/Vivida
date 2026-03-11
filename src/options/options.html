@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Groups</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="page-layout">
+
+        <!-- Sidebar — persistent unassigned themes panel -->
+        <aside class="sidebar">
+            <h2 class="sidebar-heading">Unassigned Themes</h2>
+            <div id="unassigned-list" class="sidebar-theme-list">
+                <p class="empty-message">All themes are currently assigned.</p>
+            </div>
+        </aside>
+
+        <!-- Main content area -->
+        <div class="content">
+
+            <!-- Banner — icon + extension name + version -->
+            <header class="banner">
+                <img
+                    src="../icons/v2/icon-128.png"
+                    alt="Extension icon"
+                    class="banner-icon"
+                    width="64"
+                    height="64"
+                >
+                <div class="banner-text">
+                    <h1 id="extension-name">Vivida</h1>
+                    <p id="extension-version" class="version-label"></p>
+                </div>
+                <button
+                    id="info-btn"
+                    type="button"
+                    aria-label="Help and information"
+                    title="Help"
+                >?</button>
+            </header>
+
+            <!-- Theme Groups -->
+            <section id="theme-groups-container">
+                <div class="section-header">
+                    <h2>Theme Groups</h2>
+                    <button
+                        id="create-group-btn"
+                        type="button"
+                        aria-label="Create new group"
+                    >Create New Group</button>
+                </div>
+
+                <div id="groups-list">
+                    <p class="empty-message">No groups created yet.</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Info modal -->
+<dialog id="info-modal" aria-labelledby="modal-title">
+    <div class="modal-header">
+        <h2 id="modal-title">Vivida Help</h2>
+        <button id="modal-close-btn" type="button" class="modal-close" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-body">
+        <section>
+            <h3>Active Group</h3>
+            <p>The active group determines which themes are available in the popup for quick switching. Only themes assigned to the active group will appear when you click the extension icon.</p>
+        </section>
+        <section>
+            <h3>Popup Menu</h3>
+            <p>Clicking the extension icon opens the popup where you can switch between themes in the active group. Use it to quickly cycle through your curated themes without opening this page.</p>
+        </section>
+        <section>
+            <h3>Drag and Drop</h3>
+            <p>Themes can be dragged from the Unassigned Themes sidebar into any group, between groups, and back to the sidebar. Drop a theme onto a group's theme list to assign it, or drag it back to unassign it.</p>
+        </section>
+        <section>
+            <h3>Rename</h3>
+            <p>Groups can be renamed by clicking the pencil (&#x270F;) icon next to the group name. Type a new name and press Enter or click Confirm to save, or press Escape or click Cancel to discard.</p>
+        </section>
+        <p id="modal-version" class="modal-version"></p>
+    </div>
+</dialog>
+
+    <script src="options.js" type="module"></script>
+    <script>
+        // Pull extension name + version from manifest for the banner
+            try {
+                const manifest = browser.runtime.getManifest();
+                const nameEl = document.getElementById("extension-name");
+                const versionEl = document.getElementById("extension-version");
+                if (nameEl && manifest.name) {
+                    nameEl.textContent = manifest.name;
+                }
+                if (versionEl && manifest.version) {
+                    versionEl.textContent = `(${manifest.version})`;
+                }
+            } catch (e) {
+                console.error("Could not read manifest:", e);
+            }
+    </script>
+</body>
+</html>

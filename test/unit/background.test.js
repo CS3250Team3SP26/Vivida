@@ -1,13 +1,19 @@
 import { jest } from '@jest/globals';
 
-// Mock storageServiceWrapper named exports
-jest.unstable_mockModule('../../src/lib/storageServiceWrapper.js', () => ({
-    loadGroups: jest.fn(),
-    saveGroups: jest.fn(),
-    saveGroup: jest.fn(),
+// Mock GroupManager named exports
+const mockManager = {
+    initialize: jest.fn(),
+    createGroup: jest.fn(),
+    getAllGroups: jest.fn(),
+    updateGroupThemes: jest.fn(),
     deleteGroup: jest.fn(),
-    loadActiveGroupId: jest.fn(),
-    saveActiveGroupId: jest.fn()
+    renameGroup: jest.fn(),
+    setActiveGroupId: jest.fn(),
+    getActiveGroup: jest.fn(),
+    save: jest.fn(),
+};
+jest.unstable_mockModule('../../src/lib/GroupManager.js', () => ({
+    GroupManager: jest.fn().mockImplementation(()=> mockManager)
 }));
 
 // Mock themeAPI named exports
@@ -26,6 +32,9 @@ globalThis.browser = {
     runtime: {
         onMessage: {
             addListener: jest.fn()
+        },
+        onInstalled: {
+            addListener: jest.fn()
         }
     }
 };
@@ -36,7 +45,7 @@ jest.spyOn(console, 'warn').mockImplementation(() => {});
 jest.spyOn(console, 'error').mockImplementation(() => {});
 
 const { initialize, handleMessage } = await import('../../src/background/background.js');
-const { loadGroups, saveGroups, loadActiveGroupId } = await import('../../src/lib/storageServiceWrapper.js');
+const onInstalledListener = browser.runtime.onInstalled.addListener.mock.calls[0][0];
 const { getThemes, getCurrentTheme, enableTheme, disableTheme, getThemeById } = await import('../../src/lib/themeAPI.js');
 
 // Flushes all pending microtasks/promises in the queue.
@@ -46,7 +55,12 @@ const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
 
 // Mock console methods to prevent actual logging during tests
 beforeEach(() => {
-    jest.clearAllMocks();
+    // Only clear call history, don't destroy the mock functions
+    Object.values(mockManager).forEach(fn => {
+        if (typeof fn?.mockClear === 'function') {
+            fn.mockClear();
+        }
+    });
     jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -61,16 +75,15 @@ afterEach(() => {
 // ============================================================================
 
 describe('initialize', () => {
-    it('should save empty array when no groups exist', async () => {
-        loadGroups.mockResolvedValue([]);
+    it('should call manager.initialize once', async () => {
+        mockManager.initialize.mockResolvedValue(undefined);
         await initialize();
-        expect(saveGroups).toHaveBeenCalledWith([]);
+        expect(mockManager.initialize).toHaveBeenCalledTimes(1);
     });
 
-    it('should NOT call saveGroups when groups already exist', async () => {
-        loadGroups.mockResolvedValue([{ name: 'Dark Mode', themes: [] }]);
-        await initialize();
-        expect(saveGroups).not.toHaveBeenCalled();
+    it('does not throw when manager.initialize resolves successfully', async () => {
+        mockManager.initialize.mockResolvedValue(undefined);
+        await expect(initialize()).resolves.not.toThrow();
     });
 });
 
@@ -89,22 +102,127 @@ describe('handleMessage', () => {
         });
     });
 
-    // -- Storage handler tests --
-
-    it('GET_ALL_GROUPS should return groups', async () => {
+    it('GET_ALL_GROUPS should return serialized groups', async () => {
         const sendResponse = jest.fn();
-        loadGroups.mockResolvedValue([{ name: 'Dark Mode', themes: [] }]);
+        mockManager.getAllGroups.mockReturnValue([
+            { id: 'g1', group: { name: 'Dark', themes: ['t1'] } }
+        ]);
         handleMessage({ type: 'GET_ALL_GROUPS' }, {}, sendResponse);
         await flushPromises();
-        expect(sendResponse).toHaveBeenCalledWith({ success: true, data: [{ name: 'Dark Mode', themes: [] }] });
+        expect(sendResponse).toHaveBeenCalledWith({
+            success: true,
+            data: [{ id: 'g1', name: 'Dark', themes: ['t1'] }]
+        });
     });
 
-    it('GET_ACTIVE_GROUP should return active group ID', async () => {
+it('GET_ACTIVE_GROUP should return active group ID', async () => {
+    const sendResponse = jest.fn();
+    mockManager.getActiveGroup.mockReturnValue({ id: 'g1', group: { name: 'Dark' } });
+    handleMessage({ type: 'GET_ACTIVE_GROUP' }, {}, sendResponse);
+    await flushPromises();
+    expect(sendResponse).toHaveBeenCalledWith({ success: true, data: 'g1' });
+});
+
+it('GET_ACTIVE_GROUP should return null when no active group', async () => {
+    const sendResponse = jest.fn();
+    mockManager.getActiveGroup.mockReturnValue(null);
+    handleMessage({ type: 'GET_ACTIVE_GROUP' }, {}, sendResponse);
+    await flushPromises();
+    expect(sendResponse).toHaveBeenCalledWith({ success: true, data: null });
+});
+it('DELETE_GROUP should delete group and save', async () => {
+    const sendResponse = jest.fn();
+    mockManager.deleteGroup.mockReturnValue(true);
+    mockManager.save.mockResolvedValue(undefined);
+    handleMessage({ type: 'DELETE_GROUP', groupId: 'id-123' }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.deleteGroup).toHaveBeenCalledWith('id-123');
+    expect(mockManager.save).toHaveBeenCalled();
+    expect(sendResponse).toHaveBeenCalledWith({ success: true });
+});
+
+it('DELETE_GROUP should return error when group not found', async () => {
+    const sendResponse = jest.fn();
+    mockManager.deleteGroup.mockReturnValue(false);
+    handleMessage({ type: 'DELETE_GROUP', groupId: 'id-123' }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.deleteGroup).toHaveBeenCalledWith('id-123');
+    expect(mockManager.save).not.toHaveBeenCalled();
+    expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Group not found' });
+});
+
+it('SET_ACTIVE_GROUP should set active group and save', async () => {
+    const sendResponse = jest.fn();
+    mockManager.setActiveGroupId.mockReturnValue(true);
+    mockManager.save.mockResolvedValue(undefined);
+    handleMessage({ type: 'SET_ACTIVE_GROUP', groupId: 'id-123' }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.setActiveGroupId).toHaveBeenCalledWith('id-123');
+    expect(mockManager.save).toHaveBeenCalled();
+    expect(sendResponse).toHaveBeenCalledWith({ success: true });
+});
+
+it('SET_ACTIVE_GROUP should return error when group not found', async () => {
+    const sendResponse = jest.fn();
+    mockManager.setActiveGroupId.mockReturnValue(false);
+    handleMessage({ type: 'SET_ACTIVE_GROUP', groupId: 'id-123' }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.setActiveGroupId).toHaveBeenCalledWith('id-123');
+    expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Group not found' });
+});
+
+it('SAVE_GROUP should update themes and save', async () => {
+    const sendResponse = jest.fn();
+    mockManager.updateGroupThemes.mockReturnValue(true);
+    mockManager.save.mockResolvedValue(undefined);
+    handleMessage({ type: 'SAVE_GROUP', groupId: 'id-123', themes: ['t1'] }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.updateGroupThemes).toHaveBeenCalledWith('id-123', ['t1']);
+    expect(mockManager.save).toHaveBeenCalled();
+    expect(sendResponse).toHaveBeenCalledWith({ success: true });
+});
+
+it('SAVE_GROUP should return error when group not found', async () => {
+    const sendResponse = jest.fn();
+    mockManager.updateGroupThemes.mockReturnValue(false);
+    handleMessage({ type: 'SAVE_GROUP', groupId: 'id-123', themes: ['t1'] }, {}, sendResponse);
+    await flushPromises();
+    expect(mockManager.save).not.toHaveBeenCalled();
+    expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Group not found' });
+
+});
+
+
+
+
+
+    it('RENAME_GROUP should rename a group and save', async () => {
         const sendResponse = jest.fn();
-        loadActiveGroupId.mockResolvedValue('group-123');
-        handleMessage({ type: 'GET_ACTIVE_GROUP' }, {}, sendResponse);
+        mockManager.renameGroup.mockReturnValue(true);
+        mockManager.save.mockResolvedValue(undefined);
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'New Name' }, {}, sendResponse);
         await flushPromises();
-        expect(sendResponse).toHaveBeenCalledWith({ success: true, data: 'group-123' });
+        expect(mockManager.renameGroup).toHaveBeenCalledWith('id-123', 'New Name');
+        expect(mockManager.save).toHaveBeenCalled();
+        expect(sendResponse).toHaveBeenCalledWith({ success: true });
+    });
+
+    it('RENAME_GROUP should return error when group not found', async () => {
+        const sendResponse = jest.fn();
+        mockManager.renameGroup.mockReturnValue(false);
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'New Name' }, {}, sendResponse);
+        await flushPromises();
+        expect(mockManager.renameGroup).toHaveBeenCalledWith('id-123', 'New Name');
+        expect(mockManager.save).not.toHaveBeenCalled();
+        expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Group not found' });
+    });
+
+    it('RENAME_GROUP should propagate handler errors to sendResponse', async () => {
+        const sendResponse = jest.fn();
+        mockManager.renameGroup.mockImplementation(() => { throw new Error('Duplicate name'); });
+        handleMessage({ type: 'RENAME_GROUP', groupId: 'id-123', newName: 'Taken' }, {}, sendResponse);
+        await flushPromises();
+        expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'Duplicate name' });
     });
 
     // -- Theme API handler tests --
@@ -168,5 +286,35 @@ describe('handleMessage', () => {
         handleMessage({ type: 'GET_INSTALLED_THEMES' }, {}, sendResponse);
         await flushPromises();
         expect(sendResponse).toHaveBeenCalledWith({ success: false, error: 'API failure' });
+    });
+});
+
+// ============================================================================
+// EXTENSION INSTALLATION TESTS
+// ============================================================================
+
+describe('Extension Installation', () => {
+    it('should create default group on install', () => {
+        console.log('mockManager keys:', Object.keys(mockManager));
+        console.log('createGroup type:', typeof mockManager.createGroup);
+        console.log('createGroup value:', mockManager.createGroup);
+    });
+
+    it('should create default group on install', () => {
+        mockManager.createGroup.mockReturnValue({ id: 'default-id' });
+        onInstalledListener({ reason: 'install' });
+        expect(mockManager.createGroup).toHaveBeenCalledWith("Default Group", [
+            "default-theme@mozilla.org",
+            "firefox-compact-light@mozilla.org",
+            "firefox-compact-dark@mozilla.org",
+            "firefox-alpenglow@mozilla.org",
+        ]);
+        expect(mockManager.setActiveGroupId).toHaveBeenCalledWith('default-id');
+        expect(mockManager.save).toHaveBeenCalled();
+    });
+
+    it('should not create group on update', () => {
+        onInstalledListener({ reason: 'update' });
+        expect(mockManager.createGroup).not.toHaveBeenCalled();
     });
 });
