@@ -622,6 +622,69 @@ function escapeHtml(string) {
 }
 
 // ===========================================================================
+// INFO MODAL
+// ===========================================================================
+
+/**
+ * Opens the info modal and displays the given version string.
+ * @param {string} version - The extension version to display (e.g. "0.3.0").
+ * @returns {void}
+ */
+function openInfoModal(version) {
+    const overlay = document.getElementById("info-modal-overlay");
+    const versionEl = document.getElementById("modal-version");
+    if (!overlay) return;
+    if (versionEl && version) {
+        versionEl.textContent = `Version ${version}`;
+    }
+    overlay.hidden = false;
+}
+
+/**
+ * Closes the info modal.
+ * @returns {void}
+ */
+function closeInfoModal() {
+    const overlay = document.getElementById("info-modal-overlay");
+    if (overlay) {
+        overlay.hidden = true;
+    }
+}
+
+/**
+ * Wires up the info button, close button, and backdrop-click to open/close the modal.
+ * Reads the extension version from the manifest once at setup time.
+ * @returns {void}
+ */
+function initInfoModal() {
+    let version = "";
+    try {
+        version = browser.runtime.getManifest().version;
+    } catch (e) {
+        console.error("Could not read manifest version:", e);
+    }
+
+    const infoBtn = document.getElementById("info-btn");
+    if (infoBtn) {
+        infoBtn.addEventListener("click", () => openInfoModal(version));
+    }
+
+    const closeBtn = document.getElementById("modal-close-btn");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeInfoModal);
+    }
+
+    const overlay = document.getElementById("info-modal-overlay");
+    if (overlay) {
+        overlay.addEventListener("click", (event) => {
+            if (event.target === overlay) {
+                closeInfoModal();
+            }
+        });
+    }
+}
+
+// ===========================================================================
 // DROP ZONE INITIALIZATION (called once from init)
 // ===========================================================================
 
@@ -676,6 +739,7 @@ async function init() {
     renderGroups();
     renderSidebar();
     initDropZones();
+    initInfoModal();
 
     const createButton = document.getElementById("create-group-btn");
     if (createButton) {
@@ -693,4 +757,7 @@ export {
     handleRenameGroup,
     handleDeleteGroup,
     handleEnableTheme,
+    openInfoModal,
+    closeInfoModal,
+    initInfoModal,
 };

@@ -14,10 +14,12 @@ import { jest } from '@jest/globals';
 // Browser API mock — must exist before the module is imported
 // ---------------------------------------------------------------------------
 const mockSendMessage = jest.fn();
+const mockGetManifest = jest.fn(() => ({ version: '0.3.0' }));
 
 globalThis.browser = {
     runtime: {
-        sendMessage: mockSendMessage
+        sendMessage: mockSendMessage,
+        getManifest: mockGetManifest
     }
 };
 
@@ -36,6 +38,13 @@ document.body.innerHTML = `
     <div id="unassigned-list" class="sidebar-theme-list"></div>
     <div id="groups-list"></div>
     <button id="create-group-btn" type="button"></button>
+    <button id="info-btn" type="button"></button>
+    <div id="info-modal-overlay" class="modal-overlay" hidden>
+        <div class="modal">
+            <button id="modal-close-btn" type="button"></button>
+            <p id="modal-version"></p>
+        </div>
+    </div>
 `;
 
 // ---------------------------------------------------------------------------
@@ -49,6 +58,9 @@ const {
     handleRenameGroup,
     handleDeleteGroup,
     handleEnableTheme,
+    openInfoModal,
+    closeInfoModal,
+    initInfoModal,
 } = await import('../../src/options/options.js');
 
 // ---------------------------------------------------------------------------
@@ -393,6 +405,47 @@ describe('handleMoveThemeBetweenGroups', () => {
 });
 
 // ===========================================================================
+// openInfoModal
+// ===========================================================================
+
+describe('openInfoModal', () => {
+    beforeEach(() => {
+        // Reset the overlay to its default hidden state before each test
+        const overlay = document.getElementById('info-modal-overlay');
+        overlay.hidden = true;
+        const versionEl = document.getElementById('modal-version');
+        versionEl.textContent = '';
+    });
+
+    it('makes the modal overlay visible', () => {
+        openInfoModal('1.2.3');
+
+        const overlay = document.getElementById('info-modal-overlay');
+        expect(overlay.hidden).toBe(false);
+    });
+
+    it('sets the version text with the provided version string', () => {
+        openInfoModal('1.2.3');
+
+        const versionEl = document.getElementById('modal-version');
+        expect(versionEl.textContent).toBe('Version 1.2.3');
+    });
+
+    it('does not throw when called with an empty version string', () => {
+        expect(() => openInfoModal('')).not.toThrow();
+    });
+
+    it('leaves existing version text unchanged when version is empty', () => {
+        const versionEl = document.getElementById('modal-version');
+        versionEl.textContent = 'Version 0.3.0';
+
+        openInfoModal('');
+
+        expect(versionEl.textContent).toBe('Version 0.3.0');
+    });
+});
+
+// ===========================================================================
 // handleDeleteGroup — auto-active-group on delete
 // ===========================================================================
 
@@ -470,6 +523,31 @@ describe('handleDeleteGroup — auto-active on delete', () => {
 });
 
 // ===========================================================================
+// closeInfoModal
+// ===========================================================================
+
+describe('closeInfoModal', () => {
+    beforeEach(() => {
+        // Open the modal so we have a known starting state
+        const overlay = document.getElementById('info-modal-overlay');
+        overlay.hidden = false;
+    });
+
+    it('hides the modal overlay', () => {
+        closeInfoModal();
+
+        const overlay = document.getElementById('info-modal-overlay');
+        expect(overlay.hidden).toBe(true);
+    });
+
+    it('is idempotent — calling it twice does not throw', () => {
+        closeInfoModal();
+        expect(() => closeInfoModal()).not.toThrow();
+        expect(document.getElementById('info-modal-overlay').hidden).toBe(true);
+    });
+});
+
+// ===========================================================================
 // handleEnableTheme
 // ===========================================================================
 
@@ -520,5 +598,56 @@ describe('handleEnableTheme', () => {
             type: 'ENABLE_THEME',
             themeId: 'theme-c',
         });
+    });
+});
+
+// ===========================================================================
+// initInfoModal
+// ===========================================================================
+
+describe('initInfoModal', () => {
+    beforeEach(() => {
+        const overlay = document.getElementById('info-modal-overlay');
+        overlay.hidden = true;
+        mockGetManifest.mockReturnValue({ version: '0.3.0' });
+    });
+
+    it('clicking the info button opens the modal', () => {
+        initInfoModal();
+
+        document.getElementById('info-btn').click();
+
+        expect(document.getElementById('info-modal-overlay').hidden).toBe(false);
+    });
+
+    it('clicking the close button hides the modal', () => {
+        initInfoModal();
+        document.getElementById('info-modal-overlay').hidden = false;
+
+        document.getElementById('modal-close-btn').click();
+
+        expect(document.getElementById('info-modal-overlay').hidden).toBe(true);
+    });
+
+    it('clicking the overlay backdrop hides the modal', () => {
+        initInfoModal();
+        const overlay = document.getElementById('info-modal-overlay');
+        overlay.hidden = false;
+
+        // Simulate a click directly on the overlay (not on a child element)
+        const event = new MouseEvent('click', { bubbles: true });
+        Object.defineProperty(event, 'target', { value: overlay });
+        overlay.dispatchEvent(event);
+
+        expect(overlay.hidden).toBe(true);
+    });
+
+    it('uses the version from browser.runtime.getManifest()', () => {
+        mockGetManifest.mockReturnValue({ version: '9.9.9' });
+        initInfoModal();
+
+        document.getElementById('info-btn').click();
+
+        expect(document.getElementById('modal-version').textContent).toBe('Version 9.9.9');
     });
 });
