@@ -9,6 +9,10 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+    
+# Update (June2026): This is required to avoid warnings about deprecated Node.js versions in GitHub Actions.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # Primary job: Run linting and tests
