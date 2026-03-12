@@ -1,5 +1,5 @@
 /**
- * @fileoverview Options page script for HueVault
+ * @fileoverview Options page script for Vivida
  * Handles user interactions and communicates with the background script to manage theme groups.
  */
 
@@ -16,6 +16,12 @@ let currentThemeId = null; // string|null
 // MESSAGING
 // ===========================================================================
 
+/**
+ * Sends a message to the background script.
+ * @param {string} type - The message type.
+ * @param {Object} [extra={}] - Additional properties to include in the message.
+ * @returns {Promise<Object>} The response from the background script.
+ */
 function sendMessage(type, extra = {}) {
     return browser.runtime.sendMessage({ type, ...extra });
 }
@@ -51,11 +57,21 @@ async function loadData() {
 // HELPERS
 // ===========================================================================
 
+/**
+ * Returns the display name for a given theme ID.
+ * Falls back to the raw ID if the theme is not found in allThemes.
+ * @param {string} themeId - The theme extension ID.
+ * @returns {string} The theme's display name.
+ */
 function getThemeName(themeId) {
     const theme = allThemes.find(t => t.id === themeId);
     return theme ? theme.name : themeId;
 }
 
+/**
+ * Computes the set of theme IDs that are already assigned to at least one group.
+ * @returns {Set<string>} Set of assigned theme IDs.
+ */
 function getAssignedThemeIds() {
     const assigned = new Set();
     for (const group of allGroups) {
@@ -68,6 +84,11 @@ function getAssignedThemeIds() {
 // RENDER — SIDEBAR
 // ===========================================================================
 
+/**
+ * Renders the unassigned themes panel in the sidebar.
+ * Themes not belonging to any group are shown here with drag and click support.
+ * @returns {void}
+ */
 function renderSidebar() {
     const container = document.getElementById("unassigned-list");
     if (!container) return;
@@ -89,7 +110,6 @@ function renderSidebar() {
         if (theme.id === currentThemeId) item.classList.add("active");
 
         item.innerHTML = `
-            <span class="theme-dot ${theme.id === currentThemeId ? "theme-dot--active" : ""}"></span>
             <span class="theme-name">${escapeHtml(theme.name)}</span>
             ${theme.id === currentThemeId ? '<span class="active-badge">active</span>' : ""}
         `;
@@ -102,6 +122,7 @@ function renderSidebar() {
         item.addEventListener("dragend", () => {
             item.classList.remove("dragging");
         });
+        item.addEventListener("click", () => handleEnableTheme(theme.id));
 
         container.appendChild(item);
     }
@@ -111,6 +132,11 @@ function renderSidebar() {
 // RENDER — GROUP CARDS
 // ===========================================================================
 
+/**
+ * Renders all group cards into the groups list container.
+ * Shows an empty-state message when no groups exist.
+ * @returns {void}
+ */
 function renderGroups() {
     const listContainer = document.getElementById("groups-list");
     if (!listContainer) return;
@@ -127,6 +153,13 @@ function renderGroups() {
     }
 }
 
+/**
+ * Builds a group card DOM element for the given group.
+ * Includes a header with active-state checkbox, rename button, delete button,
+ * and a theme list that accepts dropped themes from any source.
+ * @param {{ id: string, name: string, themes: string[] }} group - The group to render.
+ * @returns {HTMLElement} The group card element.
+ */
 function buildGroupCard(group) {
     const isActive = group.id === activeGroupId;
 
@@ -157,13 +190,8 @@ function buildGroupCard(group) {
     checkboxCustom.className = "active-checkbox-custom";
     checkboxCustom.setAttribute("aria-hidden", "true");
 
-    const checkboxText = document.createElement("span");
-    checkboxText.className = "active-checkbox-text";
-    checkboxText.textContent = isActive ? "Active" : "Set active";
-
     checkboxWrapper.appendChild(checkbox);
     checkboxWrapper.appendChild(checkboxCustom);
-    checkboxWrapper.appendChild(checkboxText);
 
     const groupName = document.createElement("h3");
     groupName.textContent = group.name;
@@ -240,7 +268,7 @@ function buildGroupCard(group) {
     const themeList = document.createElement("div");
     themeList.className = "theme-list";
 
-    // Drop zone: accept themes dragged from the unassigned panel
+    // Drop zone: accept themes from the unassigned panel or from other groups
     themeList.addEventListener("dragover", (event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
@@ -263,12 +291,17 @@ function buildGroupCard(group) {
         }
 
         const { themeId, sourceGroupId } = data;
-        // Only accept drops from the unassigned panel
-        if (sourceGroupId !== null) return;
-        // Skip if already in this group
+
+        // Skip if the theme is already in this group
         if (group.themes.includes(themeId)) return;
 
-        await handleAddThemeToGroup(group.id, themeId);
+        if (sourceGroupId === null) {
+            // Dragged from the unassigned panel
+            await handleAddThemeToGroup(group.id, themeId);
+        } else if (sourceGroupId !== group.id) {
+            // Dragged from a different group
+            await handleMoveThemeBetweenGroups(sourceGroupId, group.id, themeId);
+        }
     });
 
     if (group.themes.length === 0) {
@@ -290,6 +323,7 @@ function buildGroupCard(group) {
 
 /**
  * Builds a single theme row for display inside a group card.
+ * The item is draggable and clickable to activate the theme.
  * @param {string} themeId - The theme extension ID.
  * @param {string} groupId - The ID of the containing group (used for drag data).
  * @returns {HTMLElement}
@@ -303,7 +337,6 @@ function buildThemeItem(themeId, groupId) {
     item.draggable = true;
 
     item.innerHTML = `
-        <span class="theme-dot ${isCurrent ? "theme-dot--active" : ""}"></span>
         <span class="theme-name">${escapeHtml(name)}</span>
         ${isCurrent ? '<span class="active-badge">active</span>' : ""}
     `;
@@ -316,6 +349,7 @@ function buildThemeItem(themeId, groupId) {
     item.addEventListener("dragend", () => {
         item.classList.remove("dragging");
     });
+    item.addEventListener("click", () => handleEnableTheme(themeId));
 
     return item;
 }
@@ -324,6 +358,13 @@ function buildThemeItem(themeId, groupId) {
 // EVENT HANDLERS
 // ===========================================================================
 
+/**
+ * Handles setting a group as the active group.
+ * Prevents unchecking — the checkbox can only be used to switch the active group.
+ * @param {string} groupId - The ID of the group to activate.
+ * @param {HTMLInputElement} checkbox - The checkbox that triggered the change.
+ * @returns {Promise<void>}
+ */
 async function handleSetActiveGroup(groupId, checkbox) {
     if (!checkbox.checked) {
         checkbox.checked = true; // can't uncheck — only switch
@@ -346,24 +387,60 @@ async function handleSetActiveGroup(groupId, checkbox) {
     }
 }
 
+/**
+ * Handles deleting a group after user confirmation.
+ * If the deleted group was active and other groups remain, the first remaining
+ * group is automatically set as the new active group.
+ * @param {string} groupId - The ID of the group to delete.
+ * @param {string} groupName - The display name used in the confirmation prompt.
+ * @returns {Promise<void>}
+ */
 async function handleDeleteGroup(groupId, groupName) {
     if (!confirm(`Delete group "${groupName}"? This action cannot be undone.`)) return;
-
     try {
         const response = await sendMessage("DELETE_GROUP", { groupId });
-        if (response.success) {
-            allGroups = allGroups.filter(g => g.id !== groupId);
-            if (activeGroupId === groupId) activeGroupId = null;
-            renderGroups();
-            renderSidebar();
-        } else {
-            console.error("Failed to delete group:", response.error);
-        }
+        if (!response.success) { console.error("Failed to delete group:", response.error); return; }
+        await handleUpdateStateAfterDelete(groupId);
+        renderGroups();
+        renderSidebar();
     } catch (error) {
         console.error("Error deleting group:", error);
     }
 }
 
+/**
+ * Sets a new active group after the current active group is deleted.
+ * @returns {Promise<void>}
+ */
+async function handleSetNewActiveGroup() {
+    if (allGroups.length === 0) return;
+    const newActiveId = allGroups[0].id;
+    try {
+        const response = await sendMessage("SET_ACTIVE_GROUP", { groupId: newActiveId });
+        if (response.success) activeGroupId = newActiveId;
+    } catch (e) {
+        console.error("Error setting new active group after delete:", e);
+    }
+}
+
+/**
+ * Updates the local state after a group is deleted.
+ * @param {string} groupId - The ID of the deleted group.
+ * @returns {Promise<void>}
+ */
+async function handleUpdateStateAfterDelete(groupId) {
+    allGroups = allGroups.filter(g => g.id !== groupId);
+    if (activeGroupId === groupId) {
+        activeGroupId = null;
+        await handleSetNewActiveGroup();
+    }
+}
+
+/**
+ * Handles creating a new theme group via a prompt dialog.
+ * Sends CREATE_GROUP to the background script and updates local state on success.
+ * @returns {Promise<void>}
+ */
 async function handleCreateGroup() {
     const groupName = prompt("Enter a name for the new group:");
     if (!groupName || groupName.trim() === "") return;
@@ -440,6 +517,43 @@ async function handleRemoveThemeFromGroup(groupId, themeId) {
 }
 
 /**
+ * Moves a theme from one group directly into another.
+ * Sends SAVE_GROUP for both the source and target groups in parallel.
+ * Updates local state only when both saves succeed.
+ *
+ * @param {string} sourceGroupId - The ID of the group the theme is leaving.
+ * @param {string} targetGroupId - The ID of the group the theme is joining.
+ * @param {string} themeId - The theme to move.
+ * @returns {Promise<void>}
+ */
+async function handleMoveThemeBetweenGroups(sourceGroupId, targetGroupId, themeId) {
+    const sourceGroup = allGroups.find(g => g.id === sourceGroupId);
+    const targetGroup = allGroups.find(g => g.id === targetGroupId);
+    if (!sourceGroup || !targetGroup) return;
+
+    const updatedSourceThemes = sourceGroup.themes.filter(id => id !== themeId);
+    const updatedTargetThemes = [...targetGroup.themes, themeId];
+
+    try {
+        const [sourceResponse, targetResponse] = await Promise.all([
+            sendMessage("SAVE_GROUP", { groupId: sourceGroupId, themes: updatedSourceThemes }),
+            sendMessage("SAVE_GROUP", { groupId: targetGroupId, themes: updatedTargetThemes }),
+        ]);
+
+        if (sourceResponse.success && targetResponse.success) {
+            sourceGroup.themes = updatedSourceThemes;
+            targetGroup.themes = updatedTargetThemes;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to move theme between groups");
+        }
+    } catch (error) {
+        console.error("Error moving theme between groups:", error);
+    }
+}
+
+/**
  * Renames a group via the background script.
  * Updates local state and re-renders on success.
  *
@@ -465,10 +579,37 @@ async function handleRenameGroup(groupId, newName) {
     }
 }
 
+/**
+ * Activates a theme by sending ENABLE_THEME to the background script.
+ * Updates currentThemeId in local state and re-renders on success.
+ *
+ * @param {string} themeId - The ID of the theme to enable.
+ * @returns {Promise<void>}
+ */
+async function handleEnableTheme(themeId) {
+    try {
+        const response = await sendMessage("ENABLE_THEME", { themeId });
+        if (response.success) {
+            currentThemeId = themeId;
+            renderGroups();
+            renderSidebar();
+        } else {
+            console.error("Failed to enable theme:", response.error);
+        }
+    } catch (error) {
+        console.error("Error enabling theme:", error);
+    }
+}
+
 // ===========================================================================
 // UTILITY
 // ===========================================================================
 
+/**
+ * Escapes HTML special characters in a string to prevent XSS injection.
+ * @param {string} string - The raw string to escape.
+ * @returns {string} The HTML-escaped string.
+ */
 function escapeHtml(string) {
     return string
         .replaceAll('&', "&amp;")
@@ -479,12 +620,80 @@ function escapeHtml(string) {
 }
 
 // ===========================================================================
+// INFO MODAL
+// ===========================================================================
+
+/**
+ * Opens the info modal and displays the given version string.
+ * @param {string} version - The extension version to display (e.g. "0.3.0").
+ * @returns {void}
+ */
+function openInfoModal(version) {
+    const modal = document.getElementById("info-modal");
+    const versionEl = document.getElementById("modal-version");
+    if (!modal) return;
+    if (versionEl && version) {
+        versionEl.textContent = `Version ${version}`;
+    }
+    modal.showModal();
+}
+
+/**
+ * Closes the info modal.
+ * @returns {void}
+ */
+function closeInfoModal() {
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.close();
+    }
+}
+
+/**
+ * Wires up the info button, close button, and backdrop-click to open/close the modal.
+ * Reads the extension version from the manifest once at setup time.
+ * @returns {void}
+ */
+function initInfoModal() {
+    let version = "";
+    try {
+        version = browser.runtime.getManifest().version;
+    } catch (e) {
+        console.error("Could not read manifest version:", e);
+    }
+
+    const infoBtn = document.getElementById("info-btn");
+    if (infoBtn) {
+        infoBtn.addEventListener("click", () => openInfoModal(version));
+    }
+
+    const closeBtn = document.getElementById("modal-close-btn");
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeInfoModal);
+    }
+
+    const modal = document.getElementById("info-modal");
+    if (modal) {
+        modal.addEventListener("click", (event) => {
+        const rect = modal.getBoundingClientRect();
+        const clickedOutside =
+            event.clientX < rect.left || event.clientX > rect.right ||
+            event.clientY < rect.top  || event.clientY > rect.bottom;
+        if (clickedOutside) {
+            closeInfoModal();
+        }
+    });
+}
+}
+
+// ===========================================================================
 // DROP ZONE INITIALIZATION (called once from init)
 // ===========================================================================
 
 /**
  * Sets up the unassigned panel as a drop target for themes dragged out of groups.
  * Called once on page load so listeners do not accumulate across re-renders.
+ * @returns {void}
  */
 function initDropZones() {
     const container = document.getElementById("unassigned-list");
@@ -523,11 +732,16 @@ function initDropZones() {
 // INITIALIZATION
 // ===========================================================================
 
+/**
+ * Initializes the options page: loads data, renders the UI, and binds event handlers.
+ * @returns {Promise<void>}
+ */
 async function init() {
     await loadData();
     renderGroups();
     renderSidebar();
     initDropZones();
+    initInfoModal();
 
     const createButton = document.getElementById("create-group-btn");
     if (createButton) {
@@ -537,4 +751,15 @@ async function init() {
 
 document.addEventListener("DOMContentLoaded", init);
 
-export { loadData, handleAddThemeToGroup, handleRemoveThemeFromGroup, handleRenameGroup };
+export {
+    loadData,
+    handleAddThemeToGroup,
+    handleRemoveThemeFromGroup,
+    handleMoveThemeBetweenGroups,
+    handleRenameGroup,
+    handleDeleteGroup,
+    handleEnableTheme,
+    openInfoModal,
+    closeInfoModal,
+    initInfoModal,
+};
