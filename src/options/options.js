@@ -110,7 +110,6 @@ function renderSidebar() {
         if (theme.id === currentThemeId) item.classList.add("active");
 
         item.innerHTML = `
-            <span class="theme-dot ${theme.id === currentThemeId ? "theme-dot--active" : ""}"></span>
             <span class="theme-name">${escapeHtml(theme.name)}</span>
             ${theme.id === currentThemeId ? '<span class="active-badge">active</span>' : ""}
         `;
@@ -338,7 +337,6 @@ function buildThemeItem(themeId, groupId) {
     item.draggable = true;
 
     item.innerHTML = `
-        <span class="theme-dot ${isCurrent ? "theme-dot--active" : ""}"></span>
         <span class="theme-name">${escapeHtml(name)}</span>
         ${isCurrent ? '<span class="active-badge">active</span>' : ""}
     `;
