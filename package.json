@@ -1,7 +1,7 @@
 {
-  "name": "assignment1",
+  "name": "Vivida",
   "version": "0.1.0",
-  "description": "Firefox extension for creating and switching between theme groups",
+  "description": "Quickly organize and switch between your browser themes.",
   "type": "module",
   "scripts": {
     "lint": "eslint src/ test/",
