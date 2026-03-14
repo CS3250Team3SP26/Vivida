@@ -67,7 +67,7 @@ class GroupManager {
         
             } catch (error) {
                 console.error('Failed to initialize GroupManager:', error);
-                throw new Error('Initialization failed:' + error.message);
+                throw new Error(`Initialization failed: ${error.message}`);
             }
         }
 
@@ -82,7 +82,7 @@ class GroupManager {
                 const serialized = this.toJSON();
                 await saveGroups(serialized);
 
-                if (this.activeGroupId){
+                if (this.activeGroupId) {
                     await saveActiveGroupId(this.activeGroupId);
                 }
                 console.log('GroupManager state saved successfully');

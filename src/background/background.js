@@ -29,7 +29,7 @@ async function initialize() {
   try {
     await manager.initialize(); //fixed typo
   } catch (error) {
-    console.error("[Background]Error during intilization: ", error);
+    console.error("[Background] Error during intilization: ", error);
   }
 }
 
