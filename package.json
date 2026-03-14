@@ -10,7 +10,7 @@
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "docs": "jsdoc -c jsdoc.config.json",
-    "coverage:badges": "jest-coverage-badges --output ./badges"
+    "coverage:badges": "npm run test:coverage && jest-coverage-badges"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -23,8 +23,8 @@
   },
   "jest": {
     "coverageReporters": [
-      "json-summary", 
-      "text", 
+      "json-summary",
+      "text",
       "lcov"
     ],
     "testEnvironment": "jsdom",
