@@ -44,55 +44,6 @@ async function loadGroups() {
 }
 
 /**
- * Saves a single theme group by name, updating if it already exists
- * @param {string} Id - The name of the group to save
- * @param {Array<string>} themeIds - Array of theme extension IDs to associate with the group
- */
-async function saveGroup(Id, themeIds) {
-  if (typeof Id !== "string" || !Array.isArray(themeIds)) {
-    throw new TypeError(
-      "Invalid input: Id should be a string and themeIds should be an array",
-    );
-  }
-  try {
-    const existingGroups = await loadGroups();
-    const groupIndex = existingGroups.findIndex((group) => group.id === Id);
-    // If group with the same name exists, update it; otherwise, add a new group
-    if (groupIndex === -1) {
-      existingGroups.push({
-        id: Id,
-        themeIds: themeIds,
-      });
-    } else {
-      existingGroups[groupIndex] = {
-        ...existingGroups[groupIndex],
-        id: Id,
-        themeIds: themeIds,
-      };
-    }
-    await saveGroups(existingGroups);
-  } catch (error) {
-    console.error("Could not save group:", error);
-    throw error;
-  }
-}
-
-async function deleteGroup(Id) {
-  if (typeof Id !== "string") {
-    throw new TypeError("Invalid input: Id should be a string");
-  }
-  // To delete a group, we load all groups, filter out the one to delete, and save the updated list
-  try {
-    const existingGroups = await loadGroups();
-    const updatedGroups = existingGroups.filter((group) => group.id !== Id);
-    await saveGroups(updatedGroups);
-  } catch (error) {
-    console.error("Could not delete group:", error);
-    throw error;
-  }
-}
-
-/**
  * Saves which group is currently active (selected)
  * @param {string} id - The ID of the active group to save
  * @returns {Promise<void>} Resolves when the active group ID is saved successfully
@@ -132,6 +83,4 @@ export {
   loadGroups,
   saveActiveGroupId,
   loadActiveGroupId,
-  saveGroup,
-  deleteGroup,
 };
