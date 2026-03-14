@@ -45,7 +45,7 @@ class Group {
 
         //validates that the string is not epmty or whitespaced
         if (theme.trim() === '') {
-            throw new TypeError('Theme is empty or whitespaced, Ztheme must be a string');
+            throw new TypeError('Theme must be a non-empty string');
         }
 
         if (this.hasTheme(theme)) {
