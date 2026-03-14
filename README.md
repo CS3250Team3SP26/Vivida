@@ -12,7 +12,7 @@ Quickly switch and group your Firefox themes
 Vivida is a Firefox extension that brings order to your theme collection. Switch between your themes instantly from the popup, and use the Groups page to organize them into named collections. No more digging through Firefox's settings every time you want a fresh look.
 
 ---
-![Vivida demo](./assets/demo.gif)
+![Vivida demo](./assets/vivida-demo.gif)
 ---
 
 ## Installation
