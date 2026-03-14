@@ -3,98 +3,112 @@
 Quickly switch and group your Firefox themes
 
 
-  [![CI](https://github.com/CS3250Team3SP26/Vivida/actions/workflows/ci.yml/badge.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Lines](./badges/badge-lines.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Functions](./badges/badge-functions.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Branches](./badges/badge-branches.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Statements](./badges/badge-statements.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CS3250Team3SP26_Assignment1&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CS3250Team3SP26_Assignment1)
+  [![CI](https://github.com/CS3250Team3SP26/Vivida/actions/workflows/ci.yml/badge.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Lines](./coverage/badge-lines.svg)](https://github.com/CS3250Team3SP26/Vivida/actions) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CS3250Team3SP26_Assignment1&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CS3250Team3SP26_Assignment1)
   
 ---
 
-## 2. Description
+## Description
 
-Vivida is a Firefox extension that brings order to your theme collection. Create named groups of themes and switch between them instantly from a simple popup. The days of digging through Firefox's settings everytime you want a fresh look is over.
-
----
-
-## 3. Screenshots / Demo *(optional but recommended)*
-
-Even a single screenshot of the popup UI goes a long way toward making the README feel polished. A placeholder is fine early on — it signals the README is being actively maintained.
+Vivida is a Firefox extension that brings order to your theme collection. Switch between your themes instantly from the popup, and use the Groups page to organize them into named collections. No more digging through Firefox's settings every time you want a fresh look.
 
 ---
-
-## 4. Installation
-
-Address **two audiences** under clearly separated sub-headers:
-
-- **End users** — install from Firefox Add-ons (link when published)
-- **Developers** — clone the repo, run `npm ci`, load as a temporary extension in Firefox
-
+![Vivida demo](./assets/demo.gif)
 ---
 
-## 5. Usage
+## Installation
 
-A brief walkthrough of the core user flow:
-1. Creating a theme group
-2. Adding themes to a group
-3. Switching between groups
+### For Users
+ 
+> 🔗 Vivida will be available on the Firefox Add-ons store soon. Link will be added here upon release.
+ 
+---
+ 
+### For Developers
+ 
+**Prerequisites**
+- [Node.js](https://nodejs.org/) v20 or higher
+- [Firefox](https://www.mozilla.org/firefox/) browser
+ 
+**1. Clone the repository**
+```bash
+git clone https://github.com/CS3250Team3SP26/Vivida.git
+cd Vivida
+```
 
-Numbered steps are appropriate here.
+**2. Install dependencies**
+```bash
+npm ci
+```
 
+**3. Load the extension in Firefox**
+1. Open Firefox and navigate to `about:debugging`
+2. Click **This Firefox** in the left sidebar
+3. Click **Load Temporary Add-on**
+4. Navigate to the `src/` folder and select `manifest.json`
+5. Vivida will now appear in your Firefox toolbar
+ 
+> Note: Temporary add-ons are removed when Firefox is closed. Repeat step 3 each time you restart Firefox during development.
 ---
 
-## 6. Development Setup
+## Usage
+ 
+### Switching Themes
+1. Click the Vivida icon in your Firefox toolbar to open the popup
+2. Your groups are listed, starting with the **Default Group** which contains Firefox's built-in themes
+3. Click any theme to switch to it instantly
+ 
+### Managing Groups
+1. Click **Manage Groups** in the popup to open the options page
+2. From here you can:
+   - **Create** a new group
+   - **Activate** a different group
+   - **Delete** a group
+   - **Organize themes** between groups by dragging and dropping them
+ 
+---
 
-The most important section for teammates and graders. Include:
+## Development Setup
 
-- **Prerequisites:** Node.js 20+, Firefox
-- **Clone & install steps**
-- **Key npm commands** (sourced from `package.json`):
+**Prerequisites**
+- [Node.js](https://nodejs.org/) v20 or higher
+- [Firefox](https://www.mozilla.org/firefox/) browser
 
 | Command | Description |
 |---|---|
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
+| `npm run lint` | Run ESLint ||
 | `npm run test` | Run Jest tests |
 | `npm run test:coverage` | Run tests with coverage report |
 | `npm run test:watch` | Watch mode for TDD |
-| `npm run coverage:badges` | Generate coverage badge SVGs locally |
 | `npm run docs` | Generate JSDoc documentation |
-
-- **Loading in Firefox:** navigate to `about:debugging` → This Firefox → Load Temporary Add-on → select `manifest.json`
 
 ---
 
-## 7. Project Structure
-
-Include the file tree with brief inline comments explaining each major folder. The `extension-structure.md` file in the repo is the source for this.
+## Project Structure
 
 ```
 Vivida/
-├── .github/workflows/
-│   ├── ci.yml                 # Runs lint + tests on every push/PR to main and develop
-│   └── badges.yml             # Generates and commits coverage badges on new version tags
-├── badges/                    # Auto-generated Jest coverage badge SVGs (committed to repo)
-│   ├── badge-lines.svg
-│   ├── badge-functions.svg
-│   ├── badge-branches.svg
-│   └── badge-statements.svg
+├── .github/workflows/       # CI pipeline and badge generation
+├── assets/                  # README assets (demo gif)
+├── badges/                  # Auto-generated Jest coverage badges
 ├── src/
-│   ├── manifest.json          # Extension manifest (required by Firefox)
-│   ├── background/            # Background scripts, event listeners
-│   ├── popup/                 # Popup UI shown when clicking the icon
-│   ├── options/               # Settings/preferences page
-│   ├── lib/                   # Shared business logic modules
-│   └── icons/                 # Extension icons (16, 32, 48, 128px)
+│   ├── background/          # Background scripts and event listeners
+│   ├── icons/               # Extension icons (16, 32, 48, 128px)
+│   ├── lib/                 # Shared business logic modules
+│   ├── options/             # Settings/preferences page
+│   ├── popup/               # Popup UI
+│   └── manifest.json        # Extension manifest
 ├── test/
-│   ├── unit/                  # Unit tests for lib/ modules
-│   └── integration/           # Integration tests
-├── docs/                      # Generated JSDoc output (git-ignored)
-├── package.json
-└── README.md
+│   ├── integration/         # Integration tests
+│   └── unit/                # Unit tests for lib/ modules
+├── eslint.config.js
+├── jsdoc.config.json
+└── package.json
 ```
 
 ---
 
-## 8. Contributing / Definition of Done
+## Contributing / Definition of Done
 
-Since this is a team project, this section documents your process. Include:
 
 **Definition of Done** — a feature/fix is complete when:
 1. No known defects
@@ -104,17 +118,17 @@ Since this is a team project, this section documents your process. Include:
 5. All production code reviewed via pull request
 6. `main` branch up to date and tagged by release
 
-Also briefly describe the branch and PR workflow (feature branches → PR → review → merge to `develop` → `main`).
+Workflow to create a new feature - (feature branches → PR → review → merge to `develop` → `main`).
 
 ---
 
-## 9. Tech Stack
+## Tech Stack
 
 A clean, scannable list:
 
 - **Language:** JavaScript ES6+
 - **Platform:** Firefox WebExtensions (Manifest V2)
 - **Testing:** Jest with jsdom
-- **Linting:** ESLint (flat config)
+- **Static Analysis:** ESLint (flat config), SonarCloud
 - **Documentation:** JSDoc
 - **CI/CD:** GitHub Actions
