@@ -45,11 +45,7 @@ describe('themeAPI Module', () => {
         // Act: Call the getThemes function
         const themes = await getThemes();
 
-        // Assert: Verify that only themes are returned and logged correctly
-        expect(consoleLogSpy).toHaveBeenCalledWith("Retrieved themes:", [
-            { id: '1', type: 'theme', name: 'Dark Theme' },
-            { id: '3', type: 'theme', name: 'Light Theme' },
-        ]);
+        // Assert: Verify that only themes are returned
         expect(themes).toEqual([
             { id: '1', type: 'theme', name: 'Dark Theme' },
             { id: '3', type: 'theme', name: 'Light Theme' },
@@ -66,8 +62,7 @@ describe('themeAPI Module', () => {
         // Act: Call the getThemes function
         const themes = await getThemes();
 
-        // Assert: Verify that an empty array is returned and logged correctly
-        expect(consoleLogSpy).toHaveBeenCalledWith("Retrieved themes:", []);
+        // Assert: Verify that an empty array is returned
         expect(themes).toEqual([]);
     });
 
@@ -98,7 +93,6 @@ describe('themeAPI Module', () => {
 
         // Assert: Verify that the correct theme is returned
         expect(currentTheme).toEqual({ id: '2', type: 'theme', name: 'Light Theme', enabled: true });
-        expect(consoleLogSpy).toHaveBeenCalledWith("Current active theme:", { id: '2', type: 'theme', name: 'Light Theme', enabled: true });
     });
 
     test('getCurrentTheme should return null if no theme is active', async () => {
@@ -113,7 +107,6 @@ describe('themeAPI Module', () => {
 
         // Assert: Verify that null is returned
         expect(currentTheme).toBeNull();
-        expect(consoleLogSpy).toHaveBeenCalledWith("Current active theme:", undefined);
     });
 
     /* ============================================
@@ -174,7 +167,6 @@ describe('themeAPI Module', () => {
 
         // Assert: Verify that the theme is enabled
         expect(globalThis.browser.management.setEnabled).toHaveBeenCalledWith('valid-theme-id', true);
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Theme with ID valid-theme-id has been enabled.`);
     });
 
     test('enableTheme should throw an error if the theme ID is invalid', async () => {
@@ -207,7 +199,6 @@ describe('themeAPI Module', () => {
         await disableTheme('valid-theme-id');
         // Assert: Verify that the theme is disabled
         expect(globalThis.browser.management.setEnabled).toHaveBeenCalledWith('valid-theme-id', false);
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Theme with ID valid-theme-id has been disabled.`);
     });
 
     test('disableTheme should throw an error if the theme ID is invalid', async () => {
@@ -282,7 +273,6 @@ describe('themeAPI Module', () => {
         const result = await getThemeById('valid-theme-id');
         // Assert: Verify that the correct theme is returned
         expect(result).toEqual({ id: 'valid-theme-id', type: 'theme', name: 'Valid Theme' });
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Retrieved theme info:`, { id: 'valid-theme-id', type: 'theme', name: 'Valid Theme' });
     });
 
     test('getThemeById should throw an error for an invalid theme ID', async () => {

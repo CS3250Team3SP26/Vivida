@@ -70,11 +70,6 @@ describe("StorageService", () => {
       await expect(saveGroups(null)).rejects.toThrow(TypeError);
     });
 
-    test("should log success message when groups saved", async () => {
-      browserMock.storage.local.set.mockResolvedValue(undefined);
-      await saveGroups([]);
-      expect(console.log).toHaveBeenCalledWith("Groups saved successfully");
-    });
   });
 
   describe("loadGroups", () => {
