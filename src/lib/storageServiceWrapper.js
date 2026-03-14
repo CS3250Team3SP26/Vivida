@@ -4,6 +4,8 @@
  * @module lib/storageServiceWrapper
  */
 
+import { log } from './logger.js';
+
 /**
  * Saves the provided theme groups to browser storage
  * @param {Array<Object>} groups - Array of serialized theme group objects
@@ -20,7 +22,7 @@ async function saveGroups(groups) {
   }
   try {
     await browser.storage.local.set({ groups: groups });
-    console.log("Groups saved successfully");
+    log("Groups saved successfully");
   } catch (error) {
     console.error("Could not save groups:", error);
     throw error;
@@ -56,7 +58,7 @@ async function saveActiveGroupId(id) {
   }
   try {
     await browser.storage.local.set({ activeGroupId: id });
-    console.log("Active group ID saved:", id);
+    log("Active group ID saved:", id);
   } catch (error) {
     console.error("Could not save active group ID:", error);
     throw error;

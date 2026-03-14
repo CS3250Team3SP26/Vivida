@@ -9,6 +9,7 @@
 
 import { Group } from './Group.js';
 import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './storageServiceWrapper.js';
+import { log } from './logger.js';
 
 /**
  * GroupManager manages a collection of Group instances
@@ -63,7 +64,7 @@ class GroupManager {
                 if (activeID && this.groups.has(activeID)) {
                     this.activeGroupId = activeID;
                 }
-                console.log('GroupManager initialized successfully');
+                log('GroupManager initialized successfully');
 
             } catch (error) {
                 console.error('Failed to initialize GroupManager:', error);
@@ -85,7 +86,7 @@ class GroupManager {
                 if (this.activeGroupId) {
                     await saveActiveGroupId(this.activeGroupId);
                 }
-                console.log('GroupManager state saved successfully');
+                log('GroupManager state saved successfully');
 
             } catch (error) {
                 console.error('Failed to save GroupManager state:', error);
