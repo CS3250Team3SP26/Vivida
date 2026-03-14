@@ -2,7 +2,7 @@
  * @fileoverview GroupManager class that manages the collection of theme 
  * 
  * This module gives a general manager for creating, retrieveing, 
- * updateing, and deleting theme groups, as well as managing the active groups
+ * updating, and deleting theme groups, as well as managing the active groups
  * 
  * @module lib/GroupManager
  */
@@ -12,7 +12,7 @@ import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './
 
 /**
  * GroupManager manages a collection of Group instances
- * and provised methods for CRUD operations and also active group managing
+ * and provides methods for CRUD operations and also active group managing
  * 
  * @class
  */
@@ -32,7 +32,7 @@ class GroupManager {
 
         /**
          * The id of the current active group
-         * if no currect activr group, this will be null
+         * if no currect active group, this will be null
          * @private
          * @type {string|null}
          */
@@ -47,8 +47,7 @@ class GroupManager {
         }
         
         /**
-         * Initializes the manager by loading thr grpups from storage
-         * 
+         * Initializes the manager by loading the groups from storage
          * @async
          * @returns {Promise<void>}
          * @throws {Error} - if initialization fails
@@ -74,7 +73,6 @@ class GroupManager {
 
         /**
          * Saves the current state of manager to storage
-         * 
          * @async
          * @returns {Promise<void>}
          * @throws {Error} - if saving fails
@@ -97,8 +95,7 @@ class GroupManager {
         }
 
         /**
-         * Genetages a unique ID for a new group
-         * 
+         * Generates a unique ID for a new group
          * @private
          * @returns {string} - the unique ID
          */
@@ -107,10 +104,9 @@ class GroupManager {
         }
 
         /**
-         * Created a new theme group
-         * 
+         * Creates a new theme group
          * @param {string} name - The name of the new group
-         * @param (Array<string>} [themes[]] - optional initial themes for group
+         * @param {Array<string>} [themes[]] - optional initial themes for group
          * @returns {object} - an object containing the group ID and the Group instance
          * @returns {string} return.id - the unique ID of the new group
          * @returns {Group} return.group - the created Group instance
@@ -167,7 +163,6 @@ class GroupManager {
 
         /**
          * Deletes a theme group by ID
-         * 
          * @param {string} id - The ID of the group to delete
          * @returns {boolean} - true if group was deleted, false if group not found
          * @throws {TypeError} - if id is not a string
@@ -192,8 +187,7 @@ class GroupManager {
         }
 
         /**
-         * Retrieves a theme group by ID
-         * 
+         * Retrieves a theme group by ID 
          * @param {string} id - The ID of the group to retrieve
          * @returns {Group|null} - the Group instance, or null if not found
          * @throws {TypeError} - if id is not a string
@@ -207,9 +201,8 @@ class GroupManager {
         }
         
         /**
-         * Retirns all theme groups
-         * 
-         * @return {Array<Object>} - An array of objects containing group IDs and their corresponding Group instances
+         * Returns all theme groups
+         * @returns {Array<Object>} - An array of objects containing group IDs and their corresponding Group instances
          * @returns {string} return[].id - the unique ID of the group
          * @returns {Group} return[].group - The Group instance
          */
@@ -224,9 +217,8 @@ class GroupManager {
 
         /**
          * sets the active theme group by ID
-         * 
          * @param {string} id - The ID of the group to set as active
-         * @returns {boolean} - true if the active group was set, false if group not fiudn
+         * @returns {boolean} - true if the active group was set, false if group not found
          * @throws {TypeError} - if id is not a string
          */
         setActiveGroupId(id) {
@@ -244,10 +236,9 @@ class GroupManager {
 
         /**
          * Returns the currently active theme group
-         * 
          * @returns {object|null} Object that contains the active group ID and instance, null if there isnt any active
          * @returns {string} return.id - the active group ID
-         * @returns {Group} return.group - the actiev Group instance
+         * @returns {Group} return.group - the active Group instance
          */
         getActiveGroup() {
             if (!this.activeGroupId || !this.groups.has(this.activeGroupId)) {
@@ -259,8 +250,7 @@ class GroupManager {
 
         /**
          * Clears active group selection
-         * 
-         * @return {void}
+         * @returns {void}
          */
         clearActiveGroup() {
             this.activeGroupId = null;
@@ -268,7 +258,6 @@ class GroupManager {
 
         /**
          * Returns the total number of groups 
-         * 
          * @returns {number} - The total number of groups
          */
         groupCount() {
@@ -277,7 +266,6 @@ class GroupManager {
          
         /**
          * Serializes the current state of the manager to a JSON compatible format
-         * 
          * @returns {Array<Object>} - Array of serialized group objects
          * @returns {string} - return[].id - The ID of the group
          * @returns {string} - return[].name - The name of the group
@@ -297,7 +285,6 @@ class GroupManager {
 
         /**
          * Deserializes the JSON data to restore the state of the manager
-         * 
          * @param {Array<Object>} data - Array of serialized group objects
          * @param {string} data[].id - The group ID
          * @param {string} data[].name - The group name
@@ -351,7 +338,6 @@ class GroupManager {
 
         /**
          * Check if a group with the given name already exists
-         * 
          * @param {string} name - The name to check for duplicates
          * @returns {boolean} True if a group with the name exists, false otherwise
          * @throws {TypeError} If name is not a string
@@ -371,7 +357,6 @@ class GroupManager {
 
         /**
          * Checks if a group with the given ID exists
-         *
          * @param {string} id - The ID to check for existence
          * @returns {boolean} True if a group with the ID exists, false otherwise
          * @throws {TypeError} If id is not a string
@@ -386,7 +371,6 @@ class GroupManager {
 
         /**
          * Renames an existing theme group.
-         *
          * @param {string} id - The ID of the group to rename
          * @param {string} newName - The new name for the group
          * @returns {boolean} True if the group was renamed, false if the group was not found

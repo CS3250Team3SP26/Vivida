@@ -8,13 +8,13 @@
 
 /**
  * A ThemeGroup represents a collection of themes
- * and their assciated name
+ * and their associated name
  * 
  * @class
  */
 class Group {
     /**
-     * create new theme group instanxe
+     * create new theme group instance
      * @param {string} name - display name for the group
      * @param {Array<string>} themes - list of themes in the group
      * @throws {TypeError} - if the name is not a string or themes are not an array
@@ -60,7 +60,7 @@ class Group {
     /**
      * Removes a theme from the group
      * @param {string} theme - The theme to remove
-     * @returns {boolean} - True if theme has been removes, false if theme is not found
+     * @returns {boolean} - True if theme has been removed, false if theme is not found
      * @throws {TypeError} - if the theme is not a string
      */
     removeTheme(theme) {
@@ -87,7 +87,7 @@ class Group {
     /**
      * checks if a theme exists in the group
      * @param {string} theme - The theme to check for
-     * @returns {boolean} - true if theme exists, otherwise it falsw
+     * @returns {boolean} - true if theme exists, otherwise it false
      * @throws {TypeError} - if the theme is not a string
      */
     hasTheme(theme) {
