@@ -38,7 +38,7 @@ describe('Group Class', () => {
 
 
     /* ============================================
-    * ADD THEM TESTS
+    * ADD THEME TESTS
     * ============================================ */
     test('should add a theme to the group', () => {
         group.addTheme('Dark Theme');
@@ -58,7 +58,7 @@ describe('Group Class', () => {
         expect(group.themeCount()).toBe(1);
     });
 
-    test('should not add duplicate themes and shoudl return a False', () => {
+    test('should not add duplicate themes and should return a False', () => {
         group.addTheme('Dark Theme');
         const result = group.addTheme('Dark Theme');
         expect(result).toBe(false);
@@ -93,7 +93,7 @@ describe('Group Class', () => {
         expect(result).toBe(true);
         expect(group.themes).not.toContain('Light Theme');
         expect(group.themeCount()).toBe(0);
-    })
+    });
 
     test('should return False when trying to remove a non existing theme', () => {
         const result = group.removeTheme('Non Existing Theme');
@@ -101,7 +101,7 @@ describe('Group Class', () => {
         expect(group.themeCount()).toBe(0);
     });
 
-    test('should only remove one instance of.a theme', () => {
+    test('should only remove one instance of a theme', () => {
         group.addTheme('Dark Theme');
         group.addTheme('Light Theme');
         group.addTheme('big beautiful red porsche theme');
@@ -119,7 +119,7 @@ describe('Group Class', () => {
     });
 
     /* ============================================
-    * THEME COUNT TESTs
+    * THEME COUNT TESTS
     * ============================================ */
 
     describe('themeCount', () => {
@@ -127,14 +127,14 @@ describe('Group Class', () => {
             expect(group.themeCount()).toBe(0);
         });
 
-        test('should return the correct number after adding thmes', () => {
+        test('should return the correct number after adding themes', () => {
             group.addTheme('Dark Theme');
             expect(group.themeCount()).toBe(1);
 
             group.addTheme('Light Theme');
             expect(group.themeCount()).toBe(2);
 
-            group.addTheme('Big BEatiful Red Porsche Theme');
+            group.addTheme('Big Beautiful Red Porsche Theme');
             expect(group.themeCount()).toBe(3);
         });
         
@@ -150,11 +150,7 @@ describe('Group Class', () => {
             expect(group.themeCount()).toBe(1);
         });
 
-        /*============================================
-        * Redundant? 
-        * ============================================*/   
-
-        test('should return 0 aftet removing everything ', () => {
+        test('should return 0 after removing everything', () => {
             group.addTheme('Dark Theme');
             group.addTheme('Light Theme');
 
@@ -163,12 +159,10 @@ describe('Group Class', () => {
             expect(group.themeCount()).toBe(0);
         });
 
-
-
     });
 
     /* ============================================
-    * HAS THEME TRESTS
+    * HAS THEME TESTS
     * ============================================ */
 
     describe('hasTheme', () => {
@@ -177,7 +171,7 @@ describe('Group Class', () => {
             expect(group.hasTheme('Dark Theme')).toBe(true);
         });
 
-        test('shoulf return dalse when theme dont exist', () => {
+        test('should return false when theme does not exist', () => {
             expect(group.hasTheme('Non Existing Theme')).toBe(false);
         });
 
@@ -192,7 +186,7 @@ describe('Group Class', () => {
         expect(() => group.hasTheme(null)).toThrow(TypeError);
         });
 
-    })
+    });
 
 
 

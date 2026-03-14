@@ -27,9 +27,9 @@ async function initialize() {
   console.log("[Background] Theme Groups extension initializing...");
 
   try {
-    await manager.initialize(); //fixed typo
+    await manager.initialize();
   } catch (error) {
-    console.error("[Background] Error during intilization: ", error);
+    console.error("[Background] Error during initialization: ", error);
   }
 }
 

@@ -1,9 +1,9 @@
 /**
- * @fileoverview GroupManager class that manages the collection of theme 
- * 
- * This module gives a general manager for creating, retrieveing, 
+ * @fileoverview GroupManager class that manages the collection of theme
+ *
+ * This module gives a general manager for creating, retrieving,
  * updating, and deleting theme groups, as well as managing the active groups
- * 
+ *
  * @module lib/GroupManager
  */
 
@@ -13,7 +13,7 @@ import { saveGroups, loadGroups, saveActiveGroupId, loadActiveGroupId } from './
 /**
  * GroupManager manages a collection of Group instances
  * and provides methods for CRUD operations and also active group managing
- * 
+ *
  * @class
  */
 
@@ -26,13 +26,13 @@ class GroupManager {
         /**
          * Map of unique group ids to Group instances
          * @type {Map<string, Group>}
-         * 
+         *
          */
         this.groups = new Map();
 
         /**
          * The id of the current active group
-         * if no currect active group, this will be null
+         * if no current active group, this will be null
          * @private
          * @type {string|null}
          */
@@ -45,7 +45,7 @@ class GroupManager {
          */
         this.idCounter = 0;
         }
-        
+
         /**
          * Initializes the manager by loading the groups from storage
          * @async
@@ -64,7 +64,7 @@ class GroupManager {
                     this.activeGroupId = activeID;
                 }
                 console.log('GroupManager initialized successfully');
-        
+
             } catch (error) {
                 console.error('Failed to initialize GroupManager:', error);
                 throw new Error(`Initialization failed: ${error.message}`);
@@ -91,7 +91,7 @@ class GroupManager {
                 console.error('Failed to save GroupManager state:', error);
                 throw new Error('Failed to save GroupManager state: ' + error.message);
             }
-            
+
         }
 
         /**
@@ -106,20 +106,19 @@ class GroupManager {
         /**
          * Creates a new theme group
          * @param {string} name - The name of the new group
-         * @param {Array<string>} [themes[]] - optional initial themes for group
+         * @param {Array<string>} [themes] - optional initial themes for group
          * @returns {object} - an object containing the group ID and the Group instance
          * @returns {string} return.id - the unique ID of the new group
          * @returns {Group} return.group - the created Group instance
          * @throws {TypeError} - if name is not valid string
          * @throws {Error} - if group with same name already exists
-         * 
-         * */
+         */
         createGroup(name, themes = []) {
             if (typeof name !== 'string' || name.trim() === '') {
                 throw new TypeError('Group name must be a string');
             }
 
-            //check for duplicates
+            // check for duplicates
             for (const [, group] of this.groups) {
                 if (group.name === name) {
                     throw new Error(`A group with the name "${name}" already exists.`);
@@ -139,7 +138,7 @@ class GroupManager {
          * @returns {boolean} True if the group was updated, False if the group was not found.
          * @throws {TypeError} if id is not a string, or themes is not an array.
          */
-        updateGroupThemes(id, themes) { 
+        updateGroupThemes(id, themes) {
             if (typeof id !== 'string') {
                 throw new TypeError('Group ID must be a string');
             }
@@ -171,23 +170,23 @@ class GroupManager {
             if (typeof id !== 'string') {
                 throw new TypeError('Group ID must be a string');
             }
-            
+
             if (!this.groups.has(id)) {
-                return false; 
+                return false;
             }
 
             this.groups.delete(id);
 
-            //clear active group if it was deleted
+            // clear active group if it was deleted
             if (this.activeGroupId === id) {
                 this.activeGroupId = null; // Reset active group if it was deleted
             }
 
-            return true; 
+            return true;
         }
 
         /**
-         * Retrieves a theme group by ID 
+         * Retrieves a theme group by ID
          * @param {string} id - The ID of the group to retrieve
          * @returns {Group|null} - the Group instance, or null if not found
          * @throws {TypeError} - if id is not a string
@@ -199,14 +198,13 @@ class GroupManager {
 
             return this.groups.get(id) || null;
         }
-        
+
         /**
          * Returns all theme groups
          * @returns {Array<Object>} - An array of objects containing group IDs and their corresponding Group instances
          * @returns {string} return[].id - the unique ID of the group
          * @returns {Group} return[].group - The Group instance
          */
-
         getAllGroups() {
             const allGroups = [];
             for (const [id, group] of this.groups) {
@@ -236,7 +234,7 @@ class GroupManager {
 
         /**
          * Returns the currently active theme group
-         * @returns {object|null} Object that contains the active group ID and instance, null if there isnt any active
+         * @returns {object|null} Object that contains the active group ID and instance, null if there isn't any active
          * @returns {string} return.id - the active group ID
          * @returns {Group} return.group - the active Group instance
          */
@@ -257,13 +255,13 @@ class GroupManager {
         }
 
         /**
-         * Returns the total number of groups 
+         * Returns the total number of groups
          * @returns {number} - The total number of groups
          */
         groupCount() {
             return this.groups.size;
         }
-         
+
         /**
          * Serializes the current state of the manager to a JSON compatible format
          * @returns {Array<Object>} - Array of serialized group objects
@@ -292,8 +290,8 @@ class GroupManager {
          * @returns {void}
          * @throws {TypeError} If data is not an array or contains invalid entries
          */
-        fromJSON(data){
-            if (!Array.isArray(data)){
+        fromJSON(data) {
+            if (!Array.isArray(data)) {
                 throw new TypeError('Data must be an array of group objects');
             }
             this.groups.clear();
@@ -304,8 +302,9 @@ class GroupManager {
 
             for (const item of data) {
                 if (!item || typeof item !== 'object') {
-                    throw new TypeError('Each item must be an object');}
-                    
+                    throw new TypeError('Each item must be an object');
+                }
+
                 if (typeof item.id !== 'string') {
                     throw new TypeError('Each item must have a string ID');
                 }
@@ -408,5 +407,5 @@ class GroupManager {
         }
 
     }
-    
+
 export { GroupManager };

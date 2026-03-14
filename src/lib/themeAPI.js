@@ -96,7 +96,7 @@ async function disableTheme(themeId) {
 /**
  * Checks if a theme is currently enabled by its ID.
  * Does not rely on the isValidTheme function to ensure that the theme ID is valid before checking if it's enabled.
- * Instead preforms the check directly and handles any errors that may arise from an invalid theme ID.
+ * Instead performs the check directly and handles any errors that may arise from an invalid theme ID.
  * @param {String} themeId - The ID of the theme to check.
  * @returns {Promise<Boolean>} - A promise that resolves to true if the theme is enabled, false otherwise.
  */
