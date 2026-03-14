@@ -38,7 +38,8 @@
       "src/**/*.js",
       "!src/**/popup.js",
       "!src/**/background.js",
-      "!src/**/options.js"
+      "!src/**/options.js",
+      "!src/**/logger.js"
     ],
     "coverageThreshold": {
       "global": {
