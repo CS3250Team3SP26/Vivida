@@ -1,5 +1,5 @@
 /**
- * @fileoverview Background script for Theme Groups extension
+ * @fileoverview Background script for Vivida extension
  * Handles message routing and delegates to dedicated modules.
  * @module background/background
  */
@@ -25,7 +25,7 @@ const manager = new GroupManager();
  * @returns {Promise<void>}
  */
 async function initialize() {
-  log("[Background] Theme Groups extension initializing...");
+  log("[Background] Vivida extension initializing...");
 
   try {
     await manager.initialize();
@@ -265,6 +265,6 @@ browser.runtime.onMessage.addListener(handleMessage);
 
 await initialize();
 
-log("[Background] Theme Groups background script loaded successfully!");
+log("[Background] Vivida background script loaded successfully!");
 
 export { initialize, handleMessage };
