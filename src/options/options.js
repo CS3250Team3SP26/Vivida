@@ -399,7 +399,10 @@ async function handleDeleteGroup(groupId, groupName) {
     if (!confirm(`Delete group "${groupName}"? This action cannot be undone.`)) return;
     try {
         const response = await sendMessage("DELETE_GROUP", { groupId });
-        if (!response.success) { console.error("Failed to delete group:", response.error); return; }
+        if (!response.success) {
+            console.error("Failed to delete group:", response.error);
+            return;
+        }
         await handleUpdateStateAfterDelete(groupId);
         renderGroups();
         renderSidebar();
@@ -675,15 +678,15 @@ function initInfoModal() {
     const modal = document.getElementById("info-modal");
     if (modal) {
         modal.addEventListener("click", (event) => {
-        const rect = modal.getBoundingClientRect();
-        const clickedOutside =
-            event.clientX < rect.left || event.clientX > rect.right ||
-            event.clientY < rect.top  || event.clientY > rect.bottom;
-        if (clickedOutside) {
-            closeInfoModal();
-        }
-    });
-}
+            const rect = modal.getBoundingClientRect();
+            const clickedOutside =
+                event.clientX < rect.left || event.clientX > rect.right ||
+                event.clientY < rect.top  || event.clientY > rect.bottom;
+            if (clickedOutside) {
+                closeInfoModal();
+            }
+        });
+    }
 }
 
 // ===========================================================================

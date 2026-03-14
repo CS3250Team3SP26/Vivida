@@ -66,7 +66,7 @@ describe('Group Class', () => {
         expect(group.themeCount()).toBe(1);
     });
 
-     test('should outputTypeError if theme is not a string when adding', () => {
+    test('should outputTypeError if theme is not a string when adding', () => {
         expect(() => group.addTheme(123)).toThrow(TypeError);
         expect(() => group.addTheme(null)).toThrow(TypeError);
         expect(() => group.addTheme(undefined)).toThrow(TypeError);
@@ -182,12 +182,10 @@ describe('Group Class', () => {
         });
 
         test('should throw TypeError for non-string theme', () => {
-        expect(() => group.hasTheme(123)).toThrow(TypeError);
-        expect(() => group.hasTheme(null)).toThrow(TypeError);
+            expect(() => group.hasTheme(123)).toThrow(TypeError);
+            expect(() => group.hasTheme(null)).toThrow(TypeError);
         });
 
     });
-
-
 
 });
