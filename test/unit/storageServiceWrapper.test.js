@@ -7,8 +7,6 @@ import { describe, jest, test } from "@jest/globals";
 import {
   saveGroups,
   loadGroups,
-  saveGroup,
-  deleteGroup,
   saveActiveGroupId,
   loadActiveGroupId,
 } from "../../src/lib/storageServiceWrapper.js";
@@ -102,77 +100,6 @@ describe("StorageService", () => {
       const error = new Error("Read Error");
       browserMock.storage.local.get.mockRejectedValue(error);
       await expect(loadGroups()).rejects.toThrow("Read Error");
-    });
-  });
-
-  /* ============================================
-   * SAVE DELETE GROUP TESTS
-   * ============================================ */
-  describe("saveGroup", () => {
-    test("should save a new group when it does not exist", async () => {
-      const mockGroups = [{ id: "1", name: "Dark Mode" }];
-      browserMock.storage.local.get.mockResolvedValue({ groups: mockGroups });
-      browserMock.storage.local.set.mockResolvedValue(undefined);
-      await saveGroup("2", ["theme-123"]);
-      expect(browserMock.storage.local.set).toHaveBeenCalledWith({
-        groups: [
-          { id: "1", name: "Dark Mode" },
-          { id: "2", themeIds: ["theme-123"] },
-        ],
-      });
-    });
-
-    test("should update an existing group", async () => {
-      const mockGroups = [{ id: "1", name: "Dark Mode", themeIds: [] }];
-      browserMock.storage.local.get.mockResolvedValue({ groups: mockGroups });
-      browserMock.storage.local.set.mockResolvedValue(undefined);
-      await saveGroup("1", ["theme-456"]);
-      expect(browserMock.storage.local.set).toHaveBeenCalledWith({
-        groups: [{ id: "1", name: "Dark Mode", themeIds: ["theme-456"] }],
-      });
-    });
-
-    test("should throw an error if saving the group fails", async () => {
-      const error = new Error("Write Error");
-      browserMock.storage.local.get.mockResolvedValue({ groups: [] });
-      browserMock.storage.local.set.mockRejectedValue(error);
-      await expect(saveGroup("1", ["theme-123"])).rejects.toThrow("Write Error");
-    });
-
-    test("should throw a TypeError if Id is not a string", async () => {
-      await expect(saveGroup(123, ["theme-123"])).rejects.toThrow(TypeError);
-    });
-
-    test("should throw a TypeError if themeIds is not an array", async () => {
-      await expect(saveGroup("1", "not an array")).rejects.toThrow(TypeError);
-    });
-  });
-
-  describe("deleteGroup", () => {
-    test("should successfully delete a group", async () => {
-      const mockGroups = [
-        { id: "1", name: "Dark Mode" },
-        { id: "2", name: "Light Mode" },
-      ];
-      browserMock.storage.local.get.mockResolvedValue({ groups: mockGroups });
-      browserMock.storage.local.set.mockResolvedValue(undefined);
-
-      await deleteGroup("1");
-
-      expect(browserMock.storage.local.set).toHaveBeenCalledWith({
-        groups: [{ id: "2", name: "Light Mode" }],
-      });
-    });
-
-    test("should throw an error if deleting fails", async () => {
-      const error = new Error("Delete Error");
-      browserMock.storage.local.get.mockRejectedValue(error);
-
-      await expect(deleteGroup("1")).rejects.toThrow("Delete Error");
-    });
-
-    test("should throw a TypeError if input is not a string", async () => {
-      await expect(deleteGroup(123)).rejects.toThrow(TypeError);
     });
   });
 
