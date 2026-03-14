@@ -1,6 +1,6 @@
 {
   "name": "vivida",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Quickly organize and switch between your browser themes.",
   "type": "module",
   "scripts": {

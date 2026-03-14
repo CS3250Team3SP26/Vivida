@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Vivida",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "description": "Quickly organize and switch between your browser themes.",
     "browser_specific_settings": {
         "gecko": {
