@@ -6,7 +6,8 @@ test/.DS_Store
 
 # Documentation
 docs/
-coverage/
+coverage/*
+!coverage/badge-*.svg
 
 # dev_resources
 extension-structure.md

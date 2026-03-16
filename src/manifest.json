@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "ThemeGroups",
+    "name": "Vivida",
     "version": "0.3.0",
-    "description": "Organize your browser themes into groups.",
+    "description": "Quickly organize and switch between your browser themes.",
 
     "icons": {
         "16": "icons/v2/icon-16.png",
