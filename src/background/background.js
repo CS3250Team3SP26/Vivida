@@ -1,5 +1,5 @@
 /**
- * @fileoverview Background script for Theme Groups extension
+ * @fileoverview Background script for Vivida extension
  * Handles message routing and delegates to dedicated modules.
  * @module background/background
  */
@@ -12,6 +12,7 @@ import {
   disableTheme,
   getThemeById,
 } from "../lib/themeAPI.js";
+import { log } from "../lib/logger.js";
 const manager = new GroupManager();
 // ============================================================================
 // BUSINESS LOGIC FUNCTIONS
@@ -24,12 +25,12 @@ const manager = new GroupManager();
  * @returns {Promise<void>}
  */
 async function initialize() {
-  console.log("[Background] Theme Groups extension initializing...");
+  log("[Background] Vivida extension initializing...");
 
   try {
-    await manager.initialize(); //fixed typo
+    await manager.initialize();
   } catch (error) {
-    console.error("[Background]Error during intilization: ", error);
+    console.error("[Background] Error during initialization: ", error);
   }
 }
 
@@ -207,7 +208,7 @@ const messageHandlers = {
  * @returns {boolean} True to indicate async response
  */
 function handleMessage(message, sender, sendResponse) {
-  console.log("[Background] Received message:", message);
+  log("[Background] Received message:", message);
 
   const handler = messageHandlers[message.type];
 
@@ -222,7 +223,7 @@ function handleMessage(message, sender, sendResponse) {
 
   handler(message)
     .then((response) => {
-      console.log("[Background] Sending response:", response);
+      log("[Background] Sending response:", response);
       sendResponse(response);
     })
     .catch((error) => {
@@ -264,6 +265,6 @@ browser.runtime.onMessage.addListener(handleMessage);
 
 await initialize();
 
-console.log("[Background] Theme Groups background script loaded successfully!");
+log("[Background] Vivida background script loaded successfully!");
 
 export { initialize, handleMessage };

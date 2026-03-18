@@ -1,6 +1,6 @@
 /**
  * @fileoverview Theme groups data structure and related functions
- * 
+ *
  * This module defines the structure for managing theme groups,
  * including creation, retrieval, and manipulation of theme groups.
  * @module lib/Groups
@@ -8,17 +8,17 @@
 
 /**
  * A ThemeGroup represents a collection of themes
- * and their assciated name
- * 
+ * and their associated name
+ *
  * @class
  */
 class Group {
     /**
-     * create new theme group instanxe
+     * Creates new theme group instance
      * @param {string} name - display name for the group
      * @param {Array<string>} themes - list of themes in the group
      * @throws {TypeError} - if the name is not a string or themes are not an array
-     * 
+     *
      */
     constructor(name, themes = []) {
         if (typeof name !== 'string' || name.trim() === '') {
@@ -36,16 +36,16 @@ class Group {
      * @param {string} theme - The theme to add
      * @returns {boolean} - true if theme is added, false if theme already exists
      * @throws {TypeError} - if the theme is not a string
-     * 
+     *
      */
     addTheme(theme) {
         if (typeof theme !== 'string') {
             throw new TypeError('Theme must be a string');
         }
 
-        //validates that the string is not epmty or whitespaced
+        // validates that the string is not empty or whitespace
         if (theme.trim() === '') {
-            throw new TypeError('Theme is empty or whitespaced, Ztheme must be a string');
+            throw new TypeError('Theme must be a non-empty string');
         }
 
         if (this.hasTheme(theme)) {
@@ -54,13 +54,12 @@ class Group {
 
         this.themes.push(theme);
         return true; // Theme has been added successfully
-
     }// addTheme
 
     /**
      * Removes a theme from the group
      * @param {string} theme - The theme to remove
-     * @returns {boolean} - True if theme has been removes, false if theme is not found
+     * @returns {boolean} - True if theme has been removed, false if theme is not found
      * @throws {TypeError} - if the theme is not a string
      */
     removeTheme(theme) {
@@ -87,18 +86,17 @@ class Group {
     /**
      * checks if a theme exists in the group
      * @param {string} theme - The theme to check for
-     * @returns {boolean} - true if theme exists, otherwise it falsw
+     * @returns {boolean} - true if theme exists, otherwise it false
      * @throws {TypeError} - if the theme is not a string
      */
     hasTheme(theme) {
         if (typeof theme !== 'string') {
             throw new TypeError('Theme must be a string');
         }
-        
+
         return this.themes.includes(theme);
     }
 
- 
 }// Group
 
 export { Group };

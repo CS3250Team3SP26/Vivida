@@ -1,9 +1,14 @@
 {
     "manifest_version": 2,
     "name": "Vivida",
-    "version": "0.3.0",
+    "version": "1.0.0",
     "description": "Quickly organize and switch between your browser themes.",
-
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "vivida@msudenver",
+            "strict_min_version": "112.0"
+        }
+    },
     "icons": {
         "16": "icons/v2/icon-16.png",
         "32": "icons/v2/icon-32.png",
@@ -18,7 +23,7 @@
     "options_ui": {
         "page": "options/options.html",
         "open_in_tab": true
-      },
+    },
 
     "background": {
         "scripts": ["background/background.js"],
@@ -31,7 +36,7 @@
             "16": "icons/v2/icon-16.png",
             "32": "icons/v2/icon-32.png"
         },
-        "default_title": "ThemeGroups",
+        "default_title": "Vivida",
         "default_popup": "popup/popup.html"
     }
     
