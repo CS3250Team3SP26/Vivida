@@ -8,7 +8,7 @@
  *
  * @module tests/options.test
  */
-import { jest } from '@jest/globals';
+import { jest, test } from '@jest/globals';
 
 // ---------------------------------------------------------------------------
 // Browser API mock — must exist before the module is imported
@@ -35,6 +35,8 @@ jest.spyOn(console, 'error').mockImplementation(() => {});
 // Minimal DOM required by renderGroups / renderSidebar
 // ---------------------------------------------------------------------------
 document.body.innerHTML = `
+    <div id="extension-name"></div>
+    <div id="extension-version"></div>
     <div id="unassigned-list" class="sidebar-theme-list"></div>
     <div id="groups-list"></div>
     <button id="create-group-btn" type="button"></button>
@@ -50,6 +52,7 @@ document.body.innerHTML = `
 // ---------------------------------------------------------------------------
 const {
     loadData,
+    initBanner,
     handleAddThemeToGroup,
     handleRemoveThemeFromGroup,
     handleMoveThemeBetweenGroups,
@@ -97,6 +100,44 @@ function setupLoadDataMock() {
         }
     });
 }
+
+// ===========================================================================
+// initBanner
+// ===========================================================================
+
+describe('initBanner', () => {
+    beforeEach(() => {
+        const nameEl = document.getElementById('extension-name');
+        const versionEl = document.getElementById('extension-version');
+        nameEl.textContent = '';
+        versionEl.textContent = '';
+    });
+
+    test('sets the banner name and version from the manifest', () => {
+        mockGetManifest.mockReturnValue({ name: 'Test Extension', version: '1.2.3' });
+
+        initBanner();
+
+        expect(document.getElementById('extension-name').textContent).toBe('Test Extension');
+        expect(document.getElementById('extension-version').textContent).toBe('(1.2.3)');
+    });
+
+    test('handles missing name/version in manifest gracefully', () => {
+        mockGetManifest.mockReturnValue({});
+
+        expect(() => initBanner()).not.toThrow();
+        expect(document.getElementById('extension-name').textContent).toBe('');
+        expect(document.getElementById('extension-version').textContent).toBe('');
+    });
+
+    test('handles getManifest throwing an error gracefully', () => {
+        mockGetManifest.mockImplementation(() => { throw new Error('Failed to read manifest'); });
+
+        expect(() => initBanner()).not.toThrow();
+        expect(document.getElementById('extension-name').textContent).toBe('');
+        expect(document.getElementById('extension-version').textContent).toBe('');
+    });
+});
 
 // ===========================================================================
 // handleAddThemeToGroup
