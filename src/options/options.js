@@ -80,6 +80,31 @@ function getAssignedThemeIds() {
     return assigned;
 }
 
+// ==========================================================================
+// INITIALIZE BANNER
+// ===========================================================================
+
+/**
+ * Initializes the banner at the top of the options page with the extension name and version.
+ * Reads the name and version from the manifest.json file.
+ * @returns {void}
+ */
+function initBanner() {
+    try {
+        const manifest = browser.runtime.getManifest();
+        const nameEl = document.getElementById("extension-name");
+        const versionEl = document.getElementById("extension-version");
+        if (nameEl && manifest.name) {
+            nameEl.textContent = manifest.name;
+        }
+        if (versionEl && manifest.version) {
+            versionEl.textContent = `(${manifest.version})`;
+        }
+    } catch (e) {
+        console.error("Could not read manifest:", e);
+    }
+}
+
 // ===========================================================================
 // RENDER — SIDEBAR
 // ===========================================================================
@@ -740,6 +765,7 @@ function initDropZones() {
  * @returns {Promise<void>}
  */
 async function init() {
+    initBanner();
     await loadData();
     renderGroups();
     renderSidebar();
@@ -756,6 +782,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 export {
     loadData,
+    initBanner,
     handleAddThemeToGroup,
     handleRemoveThemeFromGroup,
     handleMoveThemeBetweenGroups,
