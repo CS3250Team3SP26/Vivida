@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Quickly organize and switch between your browser themes.",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "lint": "eslint src/ test/",
     "lint:fix": "eslint src/ test/ --fix",
