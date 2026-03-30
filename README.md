@@ -19,7 +19,7 @@ Vivida is a Firefox extension that brings order to your theme collection. Switch
 
 ### For Users
  
-> 🔗 Vivida will be available on the Firefox Add-ons store soon. Link will be added here upon release.
+🔗 Vivida is avaliable on the Firefox addon store via this [link](https://addons.mozilla.org/addon/vivida/). 
  
 ---
  
