@@ -132,3 +132,9 @@ A clean, scannable list:
 - **Static Analysis:** ESLint (flat config), SonarCloud
 - **Documentation:** JSDoc
 - **CI/CD:** GitHub Actions
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
