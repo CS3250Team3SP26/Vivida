@@ -4,6 +4,8 @@
  * @module lib/themeAPI
  */
 
+import { log } from './logger.js';
+
 /**
  * Retrieves the list of installed themes from the browser.
  * @returns {Promise<Array>} - A promise that resolves to an array of ExtensionInfo objects.
@@ -12,7 +14,7 @@ async function getThemes() {
     try {
         const allExtensions = await browser.management.getAll();
         const themes = allExtensions.filter(ext => ext.type === "theme");
-        console.log("Retrieved themes:", themes);
+        log("Retrieved themes:", themes);
         return themes;
     } catch (error) {
         console.error("Error retrieving themes:", error);
@@ -27,7 +29,7 @@ async function getThemes() {
 async function getCurrentTheme() {
     const allThemes = await getThemes();
     const currentTheme = allThemes.find(ext => ext.enabled);
-    console.log("Current active theme:", currentTheme);
+    log("Current active theme:", currentTheme);
     return currentTheme || null;  // Returns single theme or null
 }
 
@@ -64,7 +66,7 @@ async function enableTheme(themeId) {
     // Attempt to enable the theme
     try {
         await browser.management.setEnabled(themeId, true);
-        console.log(`Theme with ID ${themeId} has been enabled.`);
+        log(`Theme with ID ${themeId} has been enabled.`);
     } catch (error) {
         console.error("Error enabling theme:", error);
         throw error;
@@ -86,7 +88,7 @@ async function disableTheme(themeId) {
     // Attempt to disable the theme
     try {
         await browser.management.setEnabled(themeId, false);
-        console.log(`Theme with ID ${themeId} has been disabled.`);
+        log(`Theme with ID ${themeId} has been disabled.`);
     } catch (error) {
         console.error("Error disabling theme:", error);
         throw error;
@@ -96,7 +98,7 @@ async function disableTheme(themeId) {
 /**
  * Checks if a theme is currently enabled by its ID.
  * Does not rely on the isValidTheme function to ensure that the theme ID is valid before checking if it's enabled.
- * Instead preforms the check directly and handles any errors that may arise from an invalid theme ID.
+ * Instead performs the check directly and handles any errors that may arise from an invalid theme ID.
  * @param {String} themeId - The ID of the theme to check.
  * @returns {Promise<Boolean>} - A promise that resolves to true if the theme is enabled, false otherwise.
  */
@@ -128,7 +130,7 @@ async function getThemeById(themeId) {
         if (themeInfo.type !== 'theme') {
             throw new Error("ID does not correspond to a theme");
         }
-        console.log("Retrieved theme info:", themeInfo);
+        log("Retrieved theme info:", themeInfo);
         return themeInfo;
     } catch (error) {
         console.error("Error checking theme info", error);

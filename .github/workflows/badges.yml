@@ -1,0 +1,42 @@
+name: Update Coverage Badges
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  badges:
+    name: Generate and Commit Coverage Badges
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Generate coverage badges
+        run: npm run coverage:badges
+
+      - name: Commit coverage badges
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions"
+          git add badges/
+          git diff --staged --quiet || git commit -m "chore: update coverage badges [skip ci]"
+          git push

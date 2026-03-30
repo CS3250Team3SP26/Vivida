@@ -8,7 +8,7 @@
  *
  * @module tests/options.test
  */
-import { jest } from '@jest/globals';
+import { jest, test } from '@jest/globals';
 
 // ---------------------------------------------------------------------------
 // Browser API mock — must exist before the module is imported
@@ -35,6 +35,8 @@ jest.spyOn(console, 'error').mockImplementation(() => {});
 // Minimal DOM required by renderGroups / renderSidebar
 // ---------------------------------------------------------------------------
 document.body.innerHTML = `
+    <div id="extension-name"></div>
+    <div id="extension-version"></div>
     <div id="unassigned-list" class="sidebar-theme-list"></div>
     <div id="groups-list"></div>
     <button id="create-group-btn" type="button"></button>
@@ -50,6 +52,7 @@ document.body.innerHTML = `
 // ---------------------------------------------------------------------------
 const {
     loadData,
+    initBanner,
     handleAddThemeToGroup,
     handleRemoveThemeFromGroup,
     handleMoveThemeBetweenGroups,
@@ -99,6 +102,44 @@ function setupLoadDataMock() {
 }
 
 // ===========================================================================
+// initBanner
+// ===========================================================================
+
+describe('initBanner', () => {
+    beforeEach(() => {
+        const nameEl = document.getElementById('extension-name');
+        const versionEl = document.getElementById('extension-version');
+        nameEl.textContent = '';
+        versionEl.textContent = '';
+    });
+
+    test('sets the banner name and version from the manifest', () => {
+        mockGetManifest.mockReturnValue({ name: 'Test Extension', version: '1.2.3' });
+
+        initBanner();
+
+        expect(document.getElementById('extension-name').textContent).toBe('Test Extension');
+        expect(document.getElementById('extension-version').textContent).toBe('(1.2.3)');
+    });
+
+    test('handles missing name/version in manifest gracefully', () => {
+        mockGetManifest.mockReturnValue({});
+
+        expect(() => initBanner()).not.toThrow();
+        expect(document.getElementById('extension-name').textContent).toBe('');
+        expect(document.getElementById('extension-version').textContent).toBe('');
+    });
+
+    test('handles getManifest throwing an error gracefully', () => {
+        mockGetManifest.mockImplementation(() => { throw new Error('Failed to read manifest'); });
+
+        expect(() => initBanner()).not.toThrow();
+        expect(document.getElementById('extension-name').textContent).toBe('');
+        expect(document.getElementById('extension-version').textContent).toBe('');
+    });
+});
+
+// ===========================================================================
 // handleAddThemeToGroup
 // ===========================================================================
 
@@ -111,7 +152,7 @@ describe('handleAddThemeToGroup', () => {
         mockSendMessage.mockResolvedValue({ success: true });
     });
 
-    it('sends SAVE_GROUP with the new theme appended', async () => {
+    test('sends SAVE_GROUP with the new theme appended', async () => {
         await handleAddThemeToGroup('group-1', 'theme-d');
 
         expect(mockSendMessage).toHaveBeenCalledTimes(1);
@@ -122,13 +163,13 @@ describe('handleAddThemeToGroup', () => {
         });
     });
 
-    it('does nothing when the group ID does not exist', async () => {
+    test('does nothing when the group ID does not exist', async () => {
         await handleAddThemeToGroup('nonexistent-group', 'theme-d');
 
         expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it('updates local state so subsequent calls see the added theme', async () => {
+    test('updates local state so subsequent calls see the added theme', async () => {
         await handleAddThemeToGroup('group-1', 'theme-d');
 
         // Remove it next; the themes array seen by the handler should include theme-d
@@ -143,7 +184,7 @@ describe('handleAddThemeToGroup', () => {
         });
     });
 
-    it('does not update local state when SAVE_GROUP returns failure', async () => {
+    test('does not update local state when SAVE_GROUP returns failure', async () => {
         mockSendMessage.mockResolvedValue({ success: false, error: 'Storage error' });
 
         await handleAddThemeToGroup('group-1', 'theme-d');
@@ -160,7 +201,7 @@ describe('handleAddThemeToGroup', () => {
         });
     });
 
-    it('works on a second group independently', async () => {
+    test('works on a second group independently', async () => {
         await handleAddThemeToGroup('group-2', 'theme-d');
 
         expect(mockSendMessage).toHaveBeenCalledWith({
@@ -183,7 +224,7 @@ describe('handleRemoveThemeFromGroup', () => {
         mockSendMessage.mockResolvedValue({ success: true });
     });
 
-    it('sends SAVE_GROUP with the theme removed', async () => {
+    test('sends SAVE_GROUP with the theme removed', async () => {
         await handleRemoveThemeFromGroup('group-1', 'theme-a');
 
         expect(mockSendMessage).toHaveBeenCalledTimes(1);
@@ -194,13 +235,13 @@ describe('handleRemoveThemeFromGroup', () => {
         });
     });
 
-    it('does nothing when the group ID does not exist', async () => {
+    test('does nothing when the group ID does not exist', async () => {
         await handleRemoveThemeFromGroup('nonexistent-group', 'theme-a');
 
         expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it('updates local state so the removed theme is gone in subsequent calls', async () => {
+    test('updates local state so the removed theme is gone in subsequent calls', async () => {
         await handleRemoveThemeFromGroup('group-1', 'theme-a');
 
         // Removing theme-a again should now produce an empty list (only theme-b remains)
@@ -215,7 +256,7 @@ describe('handleRemoveThemeFromGroup', () => {
         });
     });
 
-    it('does not update local state when SAVE_GROUP returns failure', async () => {
+    test('does not update local state when SAVE_GROUP returns failure', async () => {
         mockSendMessage.mockResolvedValueOnce({ success: false, error: 'Storage error' });
 
         await handleRemoveThemeFromGroup('group-1', 'theme-a');
@@ -232,7 +273,7 @@ describe('handleRemoveThemeFromGroup', () => {
         });
     });
 
-    it('can empty a group completely', async () => {
+    test('can empty a group completely', async () => {
         await handleRemoveThemeFromGroup('group-2', 'theme-c');
 
         expect(mockSendMessage).toHaveBeenCalledWith({
@@ -256,7 +297,7 @@ describe('handleRenameGroup', () => {
         globalThis.alert.mockClear();
     });
 
-    it('sends RENAME_GROUP with the correct groupId and newName', async () => {
+    test('sends RENAME_GROUP with the correct groupId and newName', async () => {
         await handleRenameGroup('group-1', 'Renamed Group');
 
         expect(mockSendMessage).toHaveBeenCalledTimes(1);
@@ -267,7 +308,7 @@ describe('handleRenameGroup', () => {
         });
     });
 
-    it('updates local state so the new name is used in subsequent operations', async () => {
+    test('updates local state so the new name is used in subsequent operations', async () => {
         await handleRenameGroup('group-1', 'Renamed Group');
 
         // Rename again — if local state was updated, we'll see the first rename reflected
@@ -283,7 +324,7 @@ describe('handleRenameGroup', () => {
         });
     });
 
-    it('does not update local state when the server returns failure', async () => {
+    test('does not update local state when the server returns failure', async () => {
         mockSendMessage.mockResolvedValue({ success: false, error: 'Duplicate name' });
 
         await handleRenameGroup('group-1', 'Group Two');
@@ -303,7 +344,7 @@ describe('handleRenameGroup', () => {
         });
     });
 
-    it('calls alert when the server returns failure', async () => {
+    test('calls alert when the server returns failure', async () => {
         mockSendMessage.mockResolvedValue({ success: false, error: 'Duplicate name' });
 
         await handleRenameGroup('group-1', 'Group Two');
@@ -313,7 +354,7 @@ describe('handleRenameGroup', () => {
         );
     });
 
-    it('works on the second group', async () => {
+    test('works on the second group', async () => {
         await handleRenameGroup('group-2', 'Night Themes');
 
         expect(mockSendMessage).toHaveBeenCalledWith({
@@ -336,7 +377,7 @@ describe('handleMoveThemeBetweenGroups', () => {
         mockSendMessage.mockResolvedValue({ success: true });
     });
 
-    it('sends SAVE_GROUP for both source and target groups', async () => {
+    test('sends SAVE_GROUP for both source and target groups', async () => {
         await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
 
         expect(mockSendMessage).toHaveBeenCalledWith({
@@ -352,19 +393,19 @@ describe('handleMoveThemeBetweenGroups', () => {
         expect(mockSendMessage).toHaveBeenCalledTimes(2);
     });
 
-    it('does nothing when the source group does not exist', async () => {
+    test('does nothing when the source group does not exist', async () => {
         await handleMoveThemeBetweenGroups('nonexistent', 'group-2', 'theme-a');
 
         expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the target group does not exist', async () => {
+    test('does nothing when the target group does not exist', async () => {
         await handleMoveThemeBetweenGroups('group-1', 'nonexistent', 'theme-a');
 
         expect(mockSendMessage).not.toHaveBeenCalled();
     });
 
-    it('updates local state so subsequent calls see the moved theme', async () => {
+    test('updates local state so subsequent calls see the moved theme', async () => {
         await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
 
         // Move theme-a back — it should now be in group-2
@@ -384,7 +425,7 @@ describe('handleMoveThemeBetweenGroups', () => {
         });
     });
 
-    it('does not update local state when either save fails', async () => {
+    test('does not update local state when either save fails', async () => {
         mockSendMessage.mockResolvedValue({ success: false, error: 'Storage error' });
 
         await handleMoveThemeBetweenGroups('group-1', 'group-2', 'theme-a');
@@ -415,24 +456,24 @@ describe('openInfoModal', () => {
         versionEl.textContent = '';
     });
 
-    it('calls showModal() on the dialog', () => {
+    test('calls showModal() on the dialog', () => {
         openInfoModal('1.2.3');
 
         expect(document.getElementById('info-modal').showModal).toHaveBeenCalledTimes(1);
     });
 
-    it('sets the version text with the provided version string', () => {
+    test('sets the version text with the provided version string', () => {
         openInfoModal('1.2.3');
 
         const versionEl = document.getElementById('modal-version');
         expect(versionEl.textContent).toBe('Version 1.2.3');
     });
 
-    it('does not throw when called with an empty version string', () => {
+    test('does not throw when called with an empty version string', () => {
         expect(() => openInfoModal('')).not.toThrow();
     });
 
-    it('leaves existing version text unchanged when version is empty', () => {
+    test('leaves existing version text unchanged when version is empty', () => {
         const versionEl = document.getElementById('modal-version');
         versionEl.textContent = 'Version 0.3.0';
 
@@ -468,7 +509,7 @@ describe('handleDeleteGroup — auto-active on delete', () => {
         mockSendMessage.mockResolvedValue({ success: true });
     });
 
-    it('sends SET_ACTIVE_GROUP for the first remaining group when deleting the active group', async () => {
+    test('sends SET_ACTIVE_GROUP for the first remaining group when deleting the active group', async () => {
         await handleDeleteGroup('group-1', 'Group One');
 
         expect(mockSendMessage).toHaveBeenCalledWith(
@@ -476,14 +517,14 @@ describe('handleDeleteGroup — auto-active on delete', () => {
         );
     });
 
-    it('does not send SET_ACTIVE_GROUP when deleting a non-active group', async () => {
+    test('does not send SET_ACTIVE_GROUP when deleting a non-active group', async () => {
         await handleDeleteGroup('group-2', 'Group Two');
 
         const calls = mockSendMessage.mock.calls.map(c => c[0]);
         expect(calls.some(c => c.type === 'SET_ACTIVE_GROUP')).toBe(false);
     });
 
-    it('does not send SET_ACTIVE_GROUP when deleting the last group', async () => {
+    test('does not send SET_ACTIVE_GROUP when deleting the last group', async () => {
         // Reload with only one group active
         mockSendMessage.mockImplementation((msg) => {
             switch (msg.type) {
@@ -510,7 +551,7 @@ describe('handleDeleteGroup — auto-active on delete', () => {
         expect(calls.some(c => c.type === 'DELETE_GROUP')).toBe(true);
     });
 
-    it('does not delete the group if the user cancels the confirmation', async () => {
+    test('does not delete the group if the user cancels the confirmation', async () => {
         globalThis.confirm.mockReturnValue(false);
 
         await handleDeleteGroup('group-1', 'Group One');
@@ -531,13 +572,13 @@ describe('closeInfoModal', () => {
         modal.showModal(); // put it in "open" state
     });
 
-    it('calls close() on the dialog', () => {
+    test('calls close() on the dialog', () => {
         const modal = document.getElementById('info-modal');
         closeInfoModal();
         expect(modal.close).toHaveBeenCalledTimes(1);
     });
 
-    it('is idempotent — calling it twice does not throw', () => {
+    test('is idempotent — calling it twice does not throw', () => {
         const modal = document.getElementById('info-modal');
         closeInfoModal();
         expect(() => closeInfoModal()).not.toThrow();
@@ -557,7 +598,7 @@ describe('handleEnableTheme', () => {
         mockSendMessage.mockResolvedValue({ success: true });
     });
 
-    it('sends ENABLE_THEME with the correct themeId', async () => {
+    test('sends ENABLE_THEME with the correct themeId', async () => {
         await handleEnableTheme('theme-a');
 
         expect(mockSendMessage).toHaveBeenCalledTimes(1);
@@ -567,7 +608,7 @@ describe('handleEnableTheme', () => {
         });
     });
 
-    it('updates currentThemeId in local state on success', async () => {
+    test('updates currentThemeId in local state on success', async () => {
         await handleEnableTheme('theme-a');
 
         // Switching to a second theme should succeed; verifies the first update persisted
@@ -581,7 +622,7 @@ describe('handleEnableTheme', () => {
         });
     });
 
-    it('logs an error and does not update state when the response indicates failure', async () => {
+    test('logs an error and does not update state when the response indicates failure', async () => {
         mockSendMessage.mockResolvedValue({ success: false, error: 'Theme not found' });
 
         await handleEnableTheme('theme-a');
@@ -589,7 +630,7 @@ describe('handleEnableTheme', () => {
         expect(console.error).toHaveBeenCalledWith('Failed to enable theme:', 'Theme not found');
     });
 
-    it('works for a theme in the second group', async () => {
+    test('works for a theme in the second group', async () => {
         await handleEnableTheme('theme-c');
 
         expect(mockSendMessage).toHaveBeenCalledWith({
@@ -611,19 +652,19 @@ describe('initInfoModal', () => {
         mockGetManifest.mockReturnValue({ version: '0.3.0' });
     });
 
-    it('clicking the info button opens the modal', () => {
+    test('clicking the info button opens the modal', () => {
         initInfoModal();
         document.getElementById('info-btn').click();
         expect(document.getElementById('info-modal').showModal).toHaveBeenCalled();
     });
 
-    it('clicking the close button closes the modal', () => {
+    test('clicking the close button closes the modal', () => {
         initInfoModal();
         document.getElementById('modal-close-btn').click();
         expect(document.getElementById('info-modal').close).toHaveBeenCalled();
     });
 
-    it('clicking outside the dialog closes the modal', () => {
+    test('clicking outside the dialog closes the modal', () => {
         initInfoModal();
         const modal = document.getElementById('info-modal');
 
@@ -638,7 +679,7 @@ describe('initInfoModal', () => {
         expect(modal.close).toHaveBeenCalled();
     });
 
-    it('uses the version from browser.runtime.getManifest()', () => {
+    test('uses the version from browser.runtime.getManifest()', () => {
         mockGetManifest.mockReturnValue({ version: '9.9.9' });
         initInfoModal();
 

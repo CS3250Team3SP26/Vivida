@@ -87,21 +87,5 @@
 </dialog>
 
     <script src="options.js" type="module"></script>
-    <script>
-        // Pull extension name + version from manifest for the banner
-            try {
-                const manifest = browser.runtime.getManifest();
-                const nameEl = document.getElementById("extension-name");
-                const versionEl = document.getElementById("extension-version");
-                if (nameEl && manifest.name) {
-                    nameEl.textContent = manifest.name;
-                }
-                if (versionEl && manifest.version) {
-                    versionEl.textContent = `(${manifest.version})`;
-                }
-            } catch (e) {
-                console.error("Could not read manifest:", e);
-            }
-    </script>
 </body>
 </html>

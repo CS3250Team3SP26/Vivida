@@ -8,7 +8,7 @@
  * 
  * @module tests/GroupManager.test
  */
-import { it, jest } from '@jest/globals';
+import { jest } from '@jest/globals';
 
 // In ESM mode, jest.mock() is not available.
 // jest.unstable_mockModule() must be called BEFORE dynamic imports.
@@ -148,38 +148,38 @@ describe('GroupManager', () => {
     });
 
     describe('updateGroupThemes', () => {
-    it('updates themes on an existing group and returns true', () => {
+    test('updates themes on an existing group and returns true', () => {
         const { id } = manager.createGroup('Test Group');
         const result = manager.updateGroupThemes(id, ['theme1', 'theme2']);
         expect(result).toBe(true);
         expect(manager.getGroup(id).themes).toEqual(['theme1', 'theme2']);
     });
 
-    it('returns false for a non-existent ID', () => {
+    test('returns false for a non-existent ID', () => {
         const result = manager.updateGroupThemes('non-existent-id', ['theme1']);
         expect(result).toBe(false);
     });
 
-    it('throws TypeError if id is not a string', () => {
+    test('throws TypeError if id is not a string', () => {
         expect(() => manager.updateGroupThemes(123, ['theme1'])).toThrow(TypeError);
     });
 
-    it('throws TypeError if themes is not an array', () => {
+    test('throws TypeError if themes is not an array', () => {
         const { id } = manager.createGroup('Test Group');
         expect(() => manager.updateGroupThemes(id, 'not-an-array')).toThrow(TypeError);
     });
 
-    it('throws TypeError if themes array contains non-string', () => {
+    test('throws TypeError if themes array contains non-string', () => {
         const { id } = manager.createGroup('Test Group');
         expect(() => manager.updateGroupThemes(id, ['theme1', 123])).toThrow(TypeError);
     });
 
-    it('throws TypeError if themes array contains empty string', () => {
+    test('throws TypeError if themes array contains empty string', () => {
         const { id } = manager.createGroup('Test Group');
         expect(() => manager.updateGroupThemes(id, ['theme1', ''])).toThrow(TypeError);
     });
 
-    it('does not mutate the original themes array', () => {
+    test('does not mutate the original themes array', () => {
         const { id } = manager.createGroup('Test Group');
         const themes = ['theme1', 'theme2'];
         manager.updateGroupThemes(id, themes);

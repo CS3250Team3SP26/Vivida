@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('renderThemes click handler', () => {
-  it('clicking a theme button sends ENABLE_THEME with the correct themeId', async () => {
+  test('clicking a theme button sends ENABLE_THEME with the correct themeId', async () => {
     browser.runtime.sendMessage.mockResolvedValue({ success: true });
 
     renderThemes({
@@ -50,7 +50,7 @@ describe('renderThemes click handler', () => {
     });
   });
 
-  it('on success, clicked button gets is-selected and aria-current, previously selected button loses them', async () => {
+  test('on success, clicked button gets is-selected and aria-current, previously selected button loses them', async () => {
     browser.runtime.sendMessage.mockResolvedValue({ success: true });
 
     renderThemes({
@@ -71,7 +71,7 @@ describe('renderThemes click handler', () => {
     expect(secondButton.getAttribute('aria-current')).toBe('true');
   });
 
-  it('on error, console.error is called with the error', async () => {
+  test('on error, console.error is called with the error', async () => {
     const error = new Error('Failed to enable theme');
     browser.runtime.sendMessage.mockRejectedValue(error);
 

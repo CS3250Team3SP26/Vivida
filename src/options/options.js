@@ -80,6 +80,31 @@ function getAssignedThemeIds() {
     return assigned;
 }
 
+// ==========================================================================
+// INITIALIZE BANNER
+// ===========================================================================
+
+/**
+ * Initializes the banner at the top of the options page with the extension name and version.
+ * Reads the name and version from the manifest.json file.
+ * @returns {void}
+ */
+function initBanner() {
+    try {
+        const manifest = browser.runtime.getManifest();
+        const nameEl = document.getElementById("extension-name");
+        const versionEl = document.getElementById("extension-version");
+        if (nameEl && manifest.name) {
+            nameEl.textContent = manifest.name;
+        }
+        if (versionEl && manifest.version) {
+            versionEl.textContent = `(${manifest.version})`;
+        }
+    } catch (e) {
+        console.error("Could not read manifest:", e);
+    }
+}
+
 // ===========================================================================
 // RENDER — SIDEBAR
 // ===========================================================================
@@ -110,7 +135,6 @@ function renderSidebar() {
         if (theme.id === currentThemeId) item.classList.add("active");
 
         item.innerHTML = `
-            <span class="theme-dot ${theme.id === currentThemeId ? "theme-dot--active" : ""}"></span>
             <span class="theme-name">${escapeHtml(theme.name)}</span>
             ${theme.id === currentThemeId ? '<span class="active-badge">active</span>' : ""}
         `;
@@ -338,7 +362,6 @@ function buildThemeItem(themeId, groupId) {
     item.draggable = true;
 
     item.innerHTML = `
-        <span class="theme-dot ${isCurrent ? "theme-dot--active" : ""}"></span>
         <span class="theme-name">${escapeHtml(name)}</span>
         ${isCurrent ? '<span class="active-badge">active</span>' : ""}
     `;
@@ -401,7 +424,10 @@ async function handleDeleteGroup(groupId, groupName) {
     if (!confirm(`Delete group "${groupName}"? This action cannot be undone.`)) return;
     try {
         const response = await sendMessage("DELETE_GROUP", { groupId });
-        if (!response.success) { console.error("Failed to delete group:", response.error); return; }
+        if (!response.success) {
+            console.error("Failed to delete group:", response.error);
+            return;
+        }
         await handleUpdateStateAfterDelete(groupId);
         renderGroups();
         renderSidebar();
@@ -677,15 +703,15 @@ function initInfoModal() {
     const modal = document.getElementById("info-modal");
     if (modal) {
         modal.addEventListener("click", (event) => {
-        const rect = modal.getBoundingClientRect();
-        const clickedOutside =
-            event.clientX < rect.left || event.clientX > rect.right ||
-            event.clientY < rect.top  || event.clientY > rect.bottom;
-        if (clickedOutside) {
-            closeInfoModal();
-        }
-    });
-}
+            const rect = modal.getBoundingClientRect();
+            const clickedOutside =
+                event.clientX < rect.left || event.clientX > rect.right ||
+                event.clientY < rect.top  || event.clientY > rect.bottom;
+            if (clickedOutside) {
+                closeInfoModal();
+            }
+        });
+    }
 }
 
 // ===========================================================================
@@ -739,6 +765,7 @@ function initDropZones() {
  * @returns {Promise<void>}
  */
 async function init() {
+    initBanner();
     await loadData();
     renderGroups();
     renderSidebar();
@@ -755,6 +782,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 export {
     loadData,
+    initBanner,
     handleAddThemeToGroup,
     handleRemoveThemeFromGroup,
     handleMoveThemeBetweenGroups,

@@ -7,7 +7,7 @@ export default [
 
   // Custom configuration
   {
-    files: ['src/**/*.js', 'test/**/*.js'],
+    files: ['src/**/*.js', 'test/**/*.js', 'scripts/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
